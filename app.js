@@ -5047,8 +5047,37 @@ async function dismissCardAdvice() {
 // ==========================================
 let playerSearchDebounceTimer = null;
 
+function renderPlayerSearchPrompt() {
+  const container = document.getElementById('playerSearchResults');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="py-14 text-center glass-panel rounded-2xl border border-slate-800/80 p-6">
+      <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center mx-auto mb-3 shadow-inner">
+        <i data-lucide="search" class="w-6 h-6"></i>
+      </div>
+      <h5 class="text-white font-bold text-sm">Cerca un Giocatore</h5>
+      <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+        Inizia a digitare il nome, cognome o @username per visualizzare i profili correlati e aprire la loro carta 3D.
+      </p>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
 function openPlayerSearchModal() {
   SoundFX.playClick();
+  // Se l'utente non ha effettuato l'accesso, blocca la ricerca e richiedi il login o la registrazione
+  if (!state.currentUser) {
+    showNotificationToast(
+      "Accesso Richiesto", 
+      "Devi avere un account ed effettuare l'accesso per cercare gli altri giocatori!", 
+      "warning"
+    );
+    state.pendingActionAfterAuth = () => openPlayerSearchModal();
+    openAuthModal('login');
+    return;
+  }
+
   const modal = document.getElementById('playerSearchModal');
   if (!modal) return;
   modal.classList.remove('hidden');
@@ -5057,8 +5086,9 @@ function openPlayerSearchModal() {
     input.value = '';
     setTimeout(() => input.focus(), 100);
   }
-  searchPlayers('');
-  lucide.createIcons();
+  const clearBtn = document.getElementById('clearPlayerSearchBtn');
+  if (clearBtn) clearBtn.classList.add('hidden');
+  renderPlayerSearchPrompt();
 }
 
 function closePlayerSearchModal() {
@@ -5069,39 +5099,99 @@ function closePlayerSearchModal() {
 
 function clearPlayerSearch() {
   const input = document.getElementById('playerSearchInput');
-  if (input) input.value = '';
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
   const clearBtn = document.getElementById('clearPlayerSearchBtn');
   if (clearBtn) clearBtn.classList.add('hidden');
-  searchPlayers('');
+  renderPlayerSearchPrompt();
 }
 
 function debouncePlayerSearch() {
+  if (!state.currentUser) {
+    openPlayerSearchModal();
+    return;
+  }
   const input = document.getElementById('playerSearchInput');
   const clearBtn = document.getElementById('clearPlayerSearchBtn');
+  const query = (input ? input.value : '').trim();
+
   if (clearBtn) {
-    if (input && input.value.trim()) clearBtn.classList.remove('hidden');
+    if (query) clearBtn.classList.remove('hidden');
     else clearBtn.classList.add('hidden');
   }
+
   clearTimeout(playerSearchDebounceTimer);
+
+  if (!query) {
+    renderPlayerSearchPrompt();
+    return;
+  }
+
   playerSearchDebounceTimer = setTimeout(() => {
-    searchPlayers(input ? input.value : '');
-  }, 250);
+    searchPlayers(query);
+  }, 200);
 }
 
 async function searchPlayers(query) {
   const container = document.getElementById('playerSearchResults');
   if (!container) return;
 
+  if (!state.currentUser) {
+    container.innerHTML = `
+      <div class="py-12 text-center glass-panel rounded-2xl border border-amber-500/40 p-6">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto mb-3">
+          <i data-lucide="lock" class="w-6 h-6"></i>
+        </div>
+        <h5 class="text-white font-bold text-sm">Accesso Riservato</h5>
+        <p class="text-xs text-slate-300 mt-1 max-w-xs mx-auto">
+          Devi registrarti o accedere con il tuo account per cercare i giocatori.
+        </p>
+        <button onclick="closePlayerSearchModal(); openAuthModal('login')" class="mt-4 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition active:scale-95 shadow-lg shadow-cyan-500/25">
+          Accedi o Registrati
+        </button>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  const trimmed = (query || '').trim();
+  if (!trimmed) {
+    renderPlayerSearchPrompt();
+    return;
+  }
+
   container.innerHTML = `
     <div class="py-8 text-center text-slate-400">
       <div class="w-7 h-7 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-      <p class="text-xs">Ricerca giocatori in corso...</p>
+      <p class="text-xs">Ricerca profili correlati in corso...</p>
     </div>
   `;
 
   try {
-    const viewerId = state.currentUser ? (state.currentUser.player_id || 'user_' + state.currentUser.id || state.currentUser.username) : '';
-    const res = await fetch(`/api/search/players?q=${encodeURIComponent(query)}&viewer_id=${encodeURIComponent(viewerId)}`);
+    const viewerId = state.currentUser.player_id || ('user_' + state.currentUser.id) || state.currentUser.username;
+    const res = await fetch(`/api/search/players?q=${encodeURIComponent(trimmed)}&viewer_id=${encodeURIComponent(viewerId)}`);
+    
+    if (res.status === 401) {
+      const errData = await res.json().catch(() => ({}));
+      container.innerHTML = `
+        <div class="py-12 text-center glass-panel rounded-2xl border border-amber-500/40 p-6">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto mb-3">
+            <i data-lucide="lock" class="w-6 h-6"></i>
+          </div>
+          <h5 class="text-white font-bold text-sm">Accesso Richiesto</h5>
+          <p class="text-xs text-slate-300 mt-1 max-w-xs mx-auto">${errData.detail || "Effettua l'accesso per effettuare ricerche."}</p>
+          <button onclick="closePlayerSearchModal(); openAuthModal('login')" class="mt-4 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition active:scale-95 shadow-lg shadow-cyan-500/25">
+            Accedi o Registrati
+          </button>
+        </div>
+      `;
+      lucide.createIcons();
+      return;
+    }
+
     const data = await res.json();
     const players = data.players || [];
 
@@ -5110,7 +5200,7 @@ async function searchPlayers(query) {
         <div class="py-10 text-center glass-panel rounded-2xl border border-slate-800 p-4">
           <i data-lucide="user-x" class="w-8 h-8 text-slate-500 mx-auto mb-1.5"></i>
           <h5 class="text-white font-bold text-sm">Nessun giocatore trovato</h5>
-          <p class="text-xs text-slate-400 mt-1">Nessun calciatore corrisponde a "${query}". Prova con un altro nome o username.</p>
+          <p class="text-xs text-slate-400 mt-1">Nessun calciatore corrisponde a "${trimmed}". Prova con un altro nome o username.</p>
         </div>
       `;
       lucide.createIcons();
@@ -5248,10 +5338,126 @@ async function toggleFollowPlayer(playerId, btnElement) {
   }
 }
 
+let isInspectCardFlipped = false;
+
+function initInspectCardTilt() {
+  const container = document.getElementById('inspectCardPerspective');
+  const card = document.getElementById('inspectCardWrapper');
+  const shine = document.getElementById('inspectCardShine');
+  if (!container || !card) return;
+
+  let isTouching = false;
+
+  function applyTilt(x, y, rect, scale = 1.04) {
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const mult = isInspectCardFlipped ? -1 : 1;
+    const rotateX = Math.min(Math.max(((y - centerY) / centerY) * -18, -25), 25);
+    const rotateY = Math.min(Math.max(((x - centerX) / centerX) * (18 * mult), -25), 25);
+
+    card.classList.remove('smooth-reset');
+    card.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(${scale}, ${scale}, ${scale})`;
+
+    if (shine) {
+      if (isInspectCardFlipped) {
+        shine.style.opacity = '0';
+      } else {
+        const shineX = Math.min(Math.max((x / rect.width) * 100, 0), 100);
+        const shineY = Math.min(Math.max((y / rect.height) * 100, 0), 100);
+        shine.style.setProperty('--shine-x', `${shineX.toFixed(1)}%`);
+        shine.style.setProperty('--shine-y', `${shineY.toFixed(1)}%`);
+        shine.style.opacity = '1';
+      }
+    }
+  }
+
+  function resetTilt() {
+    card.classList.add('smooth-reset');
+    card.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+    if (shine) shine.style.opacity = '0.35';
+  }
+
+  // 1. Mouse Events (Desktop)
+  container.addEventListener('mousemove', (e) => {
+    const rect = container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    applyTilt(x, y, rect, 1.03);
+  });
+
+  container.addEventListener('mouseleave', () => {
+    resetTilt();
+  });
+
+  // 2. Touch Events (Mobile Touch Drag)
+  container.addEventListener('touchstart', (e) => {
+    isTouching = true;
+    if (e.touches && e.touches[0]) {
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      applyTilt(x, y, rect, 1.05);
+    }
+  }, { passive: true });
+
+  container.addEventListener('touchmove', (e) => {
+    if (!e.touches || !e.touches[0]) return;
+    const touch = e.touches[0];
+    const rect = container.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    applyTilt(x, y, rect, 1.05);
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+
+  container.addEventListener('touchend', () => {
+    isTouching = false;
+    resetTilt();
+  }, { passive: true });
+
+  container.addEventListener('touchcancel', () => {
+    isTouching = false;
+    resetTilt();
+  }, { passive: true });
+}
+
+function flipInspectPlayerCard() {
+  SoundFX.playClick();
+  const flipper = document.getElementById('inspectCardFlipper');
+  const wrapper = document.getElementById('inspectCardWrapper');
+  const flipBtnLabel = document.getElementById('inspectFlipBtnLabel');
+  if (!flipper) return;
+
+  isInspectCardFlipped = !isInspectCardFlipped;
+
+  if (wrapper) {
+    wrapper.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+  }
+
+  if (isInspectCardFlipped) {
+    flipper.classList.add('is-flipped');
+    if (flipBtnLabel) flipBtnLabel.innerText = "Vedi Fronte";
+  } else {
+    flipper.classList.remove('is-flipped');
+    if (flipBtnLabel) flipBtnLabel.innerText = "Gira Retro";
+  }
+}
+
 async function openInspectPlayerCard(playerId) {
   SoundFX.playClick();
   const modal = document.getElementById('viewPlayerModal');
   if (!modal) return;
+
+  // Reset flip state to front initially
+  isInspectCardFlipped = false;
+  const flipper = document.getElementById('inspectCardFlipper');
+  if (flipper) flipper.classList.remove('is-flipped');
+  const flipBtnLabel = document.getElementById('inspectFlipBtnLabel');
+  if (flipBtnLabel) flipBtnLabel.innerText = "Gira Retro";
+  const inspectWrapper = document.getElementById('inspectCardWrapper');
+  if (inspectWrapper) inspectWrapper.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
 
   try {
     const viewerId = state.currentUser ? (state.currentUser.player_id || 'user_' + state.currentUser.id || state.currentUser.username) : '';
@@ -5263,6 +5469,7 @@ async function openInspectPlayerCard(playerId) {
     const p = await res.json();
     state.inspectedPlayer = p;
 
+    // --- FRONT OF CARD ---
     document.getElementById('inspectOvrDisplay').innerText = p.ovr || 75;
     
     let roleCode = "CC";
@@ -5287,11 +5494,92 @@ async function openInspectPlayerCard(playerId) {
     document.getElementById('inspectFisDisplay').innerText = p.stats_fis || 75;
 
     document.getElementById('inspectCityDisplay').innerHTML = `📍 ${p.city || 'Italia'}`;
-    document.getElementById('inspectReliabilityDisplay').innerHTML = `🛡️ ${p.reliability_score || 100}% Affidabile`;
+    document.getElementById('inspectReliabilityDisplay').innerHTML = `🛡️ ${p.reliability_score || 100}%`;
 
+    const themeClass = `theme-${p.card_theme || 'gold'}`;
     const cardFront = document.getElementById('inspectCardFront');
     if (cardFront) {
-      cardFront.className = `fut-card-front holographic-card theme-${p.card_theme || 'gold'} p-6 flex flex-col justify-between select-none relative shadow-2xl rounded-3xl`;
+      cardFront.className = `fut-card-front holographic-card ${themeClass} p-6 flex flex-col justify-between select-none relative shadow-2xl rounded-3xl`;
+    }
+
+    // Front Badges Preview
+    const badgesPreview = document.getElementById('inspectBadgesPreview');
+    const badges = Array.isArray(p.badges) ? p.badges : [];
+    if (badgesPreview) {
+      if (badges.length > 0) {
+        badgesPreview.innerHTML = badges.slice(0, 3).map(b => `
+          <span class="bg-black/90 text-amber-300 border border-amber-400/50 text-[10px] px-2 py-0.5 rounded-full font-black">
+            ${b.split(' ')[0]} ${b.split(' ')[1] || ''}
+          </span>
+        `).join('');
+      } else {
+        badgesPreview.innerHTML = ``;
+      }
+    }
+
+    // --- BACK OF CARD ---
+    const cardBack = document.getElementById('inspectCardBack');
+    if (cardBack) {
+      cardBack.className = `fut-card-back ${themeClass} p-6 flex flex-col justify-between select-none shadow-2xl border-2 border-amber-400 rounded-3xl`;
+    }
+
+    const backName = document.getElementById('inspectCardBackNameDisplay');
+    if (backName) backName.innerText = (p.name || 'GIOCATORE').toUpperCase();
+
+    const fpBadge = document.getElementById('inspectFairPlayRatingBadge');
+    if (fpBadge) fpBadge.innerText = `⭐ ${(Number(p.fair_play_rating) || 5.0).toFixed(1)} PERSONA`;
+
+    const saBadge = document.getElementById('inspectSkillAccuracyBadge');
+    if (saBadge) saBadge.innerText = `🎯 ${(Number(p.card_accuracy_rating) || 5.0).toFixed(1)} SCHEDA`;
+
+    const matchesElem = document.getElementById('inspectMatchesPlayedDisplay');
+    if (matchesElem) matchesElem.innerText = p.matches_played || 0;
+
+    const mvpElem = document.getElementById('inspectMvpDisplay');
+    if (mvpElem) mvpElem.innerText = p.mvp_count || 0;
+
+    const relPctElem = document.getElementById('inspectReliabilityPctDisplay');
+    if (relPctElem) relPctElem.innerText = `${p.reliability_score || 100}%`;
+
+    const bioElem = document.getElementById('inspectCardBackBioDisplay');
+    if (bioElem) {
+      bioElem.innerText = p.bio ? `"${p.bio}"` : `"Pronto a scendere in campo e dare il massimo per la squadra!"`;
+    }
+
+    const backBadgesList = document.getElementById('inspectCardBackBadgesList');
+    if (backBadgesList) {
+      if (badges.length > 0) {
+        backBadgesList.innerHTML = badges.map(b => `
+          <div class="flex items-center gap-1.5 text-amber-200">
+            <i data-lucide="award" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
+            <span>${b}</span>
+          </div>
+        `).join('');
+      } else {
+        backBadgesList.innerHTML = `<p class="text-xs text-slate-400 italic">Ancora nessuna targhetta sbloccata</p>`;
+      }
+    }
+
+    // WhatsApp Contact CTA
+    const waLink = document.getElementById('inspectWhatsAppLink');
+    if (waLink) {
+      const rawPhone = p.phone || '';
+      const waClean = rawPhone.replace(/[^0-9]/g, '');
+      if (waClean.length >= 8) {
+        waLink.href = `https://wa.me/${waClean}?text=Ciao%20${encodeURIComponent(p.name)}!%20Ti%20ho%20trovato%20su%20Trova%20l'Ultimo,%20giochi%20con%20noi?`;
+        waLink.target = "_blank";
+        waLink.onclick = null;
+        waLink.innerHTML = `<i data-lucide="phone-call" class="w-3.5 h-3.5"></i><span>Contatta su WhatsApp</span>`;
+      } else {
+        waLink.href = 'javascript:void(0)';
+        waLink.target = "";
+        waLink.onclick = () => {
+          closeInspectPlayerCard();
+          closePlayerSearchModal();
+          openChatCenterModal(p.id, p.name);
+        };
+        waLink.innerHTML = `<i data-lucide="message-circle" class="w-3.5 h-3.5"></i><span>Invia Messaggio in Chat</span>`;
+      }
     }
 
     updateInspectModalFollowButton(p.is_following, p.followers_count || 0);
@@ -5337,6 +5625,11 @@ function closeInspectPlayerCard() {
   SoundFX.playClick();
   const modal = document.getElementById('viewPlayerModal');
   if (modal) modal.classList.add('hidden');
+  isInspectCardFlipped = false;
+  const flipper = document.getElementById('inspectCardFlipper');
+  if (flipper) flipper.classList.remove('is-flipped');
+  const inspectWrapper = document.getElementById('inspectCardWrapper');
+  if (inspectWrapper) inspectWrapper.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
 }
 
 function toggleFollowInspectedPlayer() {
@@ -5365,6 +5658,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchMatches();
   fetchUserProfile();
   initCardTilt();
+  initInspectCardTilt();
   checkPendingReviews();
   fetchUserNotifications();
   setInterval(fetchUserNotifications, 8000);
