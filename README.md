@@ -42,11 +42,3 @@ Oltre alla bacheca delle partite che cercano l'ultimo uomo, è ora presente la s
 - Il Bomber col cerchietto, La Saracinesca col cappellino alla Benji e guanti, Il Metronomo con gli occhiali alla Davids, La Roccia con barba vichinga e cicatrice, Il Terzino Anni 90 col ciuffo biondo e cerotto, Il Fenomeno col colletto alzato, Il Senatore coi baffi e Il Jolly con bandana.
 
 ---
-
-## 🚀 Come Accedere all'Applicazione
-
-L'app è avviata e funzionante all'indirizzo:  
-👉 **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
-
-- Per accedere come Admin (funzioni private per moderare partite, recensioni e impostazioni globali):
-  - Inserisci nel login: `admin` / `68700005Tc_-+-`
