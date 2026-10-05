@@ -4144,6 +4144,11 @@ function populateCardEditor(p) {
   const skillAccuracyBadge = document.getElementById('cardSkillAccuracyBadge');
   if (skillAccuracyBadge) skillAccuracyBadge.innerText = `🎯 ${p.card_accuracy_rating || '5.0'} SCHEDA VERA`;
 
+  const followersDisplay = document.getElementById('cardFollowersDisplay');
+  if (followersDisplay) {
+    followersDisplay.innerText = p.followers_count || 0;
+  }
+
   // Pre-fill organizer contacts in match creation if logged in
   if (state.currentUser) {
     const orgName = document.getElementById('createOrganizerName');
@@ -5035,6 +5040,316 @@ async function dismissCardAdvice() {
     } catch (e) {}
     state.activeCardAdviceNotification = null;
   }
+}
+
+// ==========================================
+// SOCIAL COMMUNITY & PLAYER SEARCH FUNCTIONS
+// ==========================================
+let playerSearchDebounceTimer = null;
+
+function openPlayerSearchModal() {
+  SoundFX.playClick();
+  const modal = document.getElementById('playerSearchModal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  const input = document.getElementById('playerSearchInput');
+  if (input) {
+    input.value = '';
+    setTimeout(() => input.focus(), 100);
+  }
+  searchPlayers('');
+  lucide.createIcons();
+}
+
+function closePlayerSearchModal() {
+  SoundFX.playClick();
+  const modal = document.getElementById('playerSearchModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function clearPlayerSearch() {
+  const input = document.getElementById('playerSearchInput');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('clearPlayerSearchBtn');
+  if (clearBtn) clearBtn.classList.add('hidden');
+  searchPlayers('');
+}
+
+function debouncePlayerSearch() {
+  const input = document.getElementById('playerSearchInput');
+  const clearBtn = document.getElementById('clearPlayerSearchBtn');
+  if (clearBtn) {
+    if (input && input.value.trim()) clearBtn.classList.remove('hidden');
+    else clearBtn.classList.add('hidden');
+  }
+  clearTimeout(playerSearchDebounceTimer);
+  playerSearchDebounceTimer = setTimeout(() => {
+    searchPlayers(input ? input.value : '');
+  }, 250);
+}
+
+async function searchPlayers(query) {
+  const container = document.getElementById('playerSearchResults');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="py-8 text-center text-slate-400">
+      <div class="w-7 h-7 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+      <p class="text-xs">Ricerca giocatori in corso...</p>
+    </div>
+  `;
+
+  try {
+    const viewerId = state.currentUser ? (state.currentUser.player_id || 'user_' + state.currentUser.id || state.currentUser.username) : '';
+    const res = await fetch(`/api/search/players?q=${encodeURIComponent(query)}&viewer_id=${encodeURIComponent(viewerId)}`);
+    const data = await res.json();
+    const players = data.players || [];
+
+    if (!players.length) {
+      container.innerHTML = `
+        <div class="py-10 text-center glass-panel rounded-2xl border border-slate-800 p-4">
+          <i data-lucide="user-x" class="w-8 h-8 text-slate-500 mx-auto mb-1.5"></i>
+          <h5 class="text-white font-bold text-sm">Nessun giocatore trovato</h5>
+          <p class="text-xs text-slate-400 mt-1">Nessun calciatore corrisponde a "${query}". Prova con un altro nome o username.</p>
+        </div>
+      `;
+      lucide.createIcons();
+      return;
+    }
+
+    container.innerHTML = players.map(p => {
+      const isMe = state.currentUser && (
+        p.id === state.currentUser.player_id || 
+        p.id === 'user_' + state.currentUser.id || 
+        p.linked_username === state.currentUser.username ||
+        (p.name && state.currentUser.full_name && p.name.toLowerCase() === state.currentUser.full_name.toLowerCase())
+      );
+      const usernameLabel = p.linked_username ? `@${p.linked_username}` : (p.nickname || '@giocatore');
+      const isFollowing = Boolean(p.is_following);
+      const followersCount = p.followers_count || 0;
+
+      return `
+        <div class="p-3 sm:p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/40 transition flex items-center justify-between gap-3 group">
+          
+          <!-- Avatar + Info -->
+          <div class="flex items-center gap-3 min-w-0 cursor-pointer" onclick="openInspectPlayerCard('${p.id}')">
+            <div class="relative flex-shrink-0">
+              <img src="${p.photo_url || '/static/avatars/bomber.svg'}" class="w-12 h-12 rounded-xl object-cover border border-amber-300/50 bg-slate-950 shadow-md">
+              <span class="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-md bg-amber-400 text-slate-950 font-black text-[9px] font-bebas">
+                ${p.ovr || 75}
+              </span>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <h5 class="font-bold text-white text-sm truncate group-hover:text-cyan-300 transition">${p.name || 'Giocatore'}</h5>
+                <span class="text-[10px] font-mono text-cyan-400 font-medium">${usernameLabel}</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                <span class="font-semibold text-amber-300">${p.primary_role || 'Jolly'}</span>
+                <span>•</span>
+                <span class="flex items-center gap-0.5 text-slate-300">
+                  <i data-lucide="users" class="w-3 h-3 text-cyan-400"></i>
+                  <span id="playerSearchFollowers_${p.id}">${followersCount}</span> follow
+                </span>
+                ${p.city ? `<span>•</span><span>📍 ${p.city}</span>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <button onclick="openInspectPlayerCard('${p.id}')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1 border border-slate-700" title="Vedi Scheda Tecnica 3D">
+              <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span class="hidden sm:inline">Scheda</span>
+            </button>
+
+            ${!isMe ? `
+              <button 
+                id="searchFollowBtn_${p.id}" 
+                onclick="toggleFollowPlayer('${p.id}', this)" 
+                class="px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1 shadow-sm ${isFollowing ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/50' : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-cyan-500/25'}"
+              >
+                <i data-lucide="${isFollowing ? 'check' : 'user-plus'}" class="w-3.5 h-3.5"></i>
+                <span>${isFollowing ? 'Seguito' : 'Segui'}</span>
+              </button>
+            ` : `
+              <span class="text-[10px] font-bold text-slate-500 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">Tu</span>
+            `}
+          </div>
+
+        </div>
+      `;
+    }).join('');
+
+    lucide.createIcons();
+  } catch (err) {
+    console.error('Search error:', err);
+    container.innerHTML = `
+      <div class="py-6 text-center text-rose-400 text-xs">
+        Errore durante la ricerca giocatori. Riprova.
+      </div>
+    `;
+  }
+}
+
+async function toggleFollowPlayer(playerId, btnElement) {
+  if (!state.currentUser) {
+    showNotificationToast("Accesso Richiesto", "Accedi o registrati per seguire i tuoi compagni di calcetto!", "error");
+    openAuthModal();
+    return;
+  }
+
+  SoundFX.playClick();
+  const followerId = state.currentUser.player_id || ('user_' + state.currentUser.id) || state.currentUser.username;
+
+  try {
+    const res = await fetch(`/api/players/${playerId}/toggle-follow`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ follower_id: followerId })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showNotificationToast("Attenzione", data.detail || "Impossibile completare l'azione.", "error");
+      return;
+    }
+
+    const searchBtn = btnElement || document.getElementById(`searchFollowBtn_${playerId}`);
+    if (searchBtn) {
+      if (data.is_following) {
+        searchBtn.className = "px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1 shadow-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/50";
+        searchBtn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Seguito</span>`;
+      } else {
+        searchBtn.className = "px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1 shadow-sm bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-cyan-500/25";
+        searchBtn.innerHTML = `<i data-lucide="user-plus" class="w-3.5 h-3.5"></i><span>Segui</span>`;
+      }
+    }
+
+    const countElem = document.getElementById(`playerSearchFollowers_${playerId}`);
+    if (countElem) countElem.innerText = data.followers_count;
+
+    if (state.inspectedPlayer && state.inspectedPlayer.id === playerId) {
+      state.inspectedPlayer.is_following = data.is_following;
+      state.inspectedPlayer.followers_count = data.followers_count;
+      updateInspectModalFollowButton(data.is_following, data.followers_count);
+    }
+
+    showNotificationToast(
+      data.is_following ? "Nuovo Seguito! ⭐" : "Non segui più",
+      data.message,
+      data.is_following ? "success" : "info"
+    );
+
+    lucide.createIcons();
+  } catch (err) {
+    console.error('Follow toggle error:', err);
+    showNotificationToast("Errore", "Si è verificato un errore durante l'aggiornamento.", "error");
+  }
+}
+
+async function openInspectPlayerCard(playerId) {
+  SoundFX.playClick();
+  const modal = document.getElementById('viewPlayerModal');
+  if (!modal) return;
+
+  try {
+    const viewerId = state.currentUser ? (state.currentUser.player_id || 'user_' + state.currentUser.id || state.currentUser.username) : '';
+    const res = await fetch(`/api/players/${playerId}/card?viewer_id=${encodeURIComponent(viewerId)}`);
+    if (!res.ok) {
+      showNotificationToast("Attenzione", "Scheda giocatore non trovata.", "error");
+      return;
+    }
+    const p = await res.json();
+    state.inspectedPlayer = p;
+
+    document.getElementById('inspectOvrDisplay').innerText = p.ovr || 75;
+    
+    let roleCode = "CC";
+    if (p.primary_role === "Portiere") roleCode = "POR";
+    else if (p.primary_role === "Difensore") roleCode = "DIF";
+    else if (p.primary_role === "Attaccante") roleCode = "ATT";
+    else if (p.primary_role === "Jolly") roleCode = "JOL";
+    document.getElementById('inspectRoleDisplay').innerText = roleCode;
+
+    document.getElementById('inspectFollowersCount').innerText = p.followers_count || 0;
+    document.getElementById('inspectPhotoDisplay').src = p.photo_url || '/static/avatars/bomber.svg';
+    document.getElementById('inspectFootDisplay').innerText = p.foot === 'Destro' ? 'Dx' : (p.foot === 'Sinistro' ? 'Sx' : 'Amb');
+    document.getElementById('inspectAgeDisplay').innerText = `${p.age || 25} anni`;
+    document.getElementById('inspectNameDisplay').innerText = (p.name || 'GIOCATORE').toUpperCase();
+    document.getElementById('inspectNicknameDisplay').innerText = p.linked_username ? `@${p.linked_username}` : (p.nickname || '');
+
+    document.getElementById('inspectVelDisplay').innerText = p.stats_vel || 75;
+    document.getElementById('inspectDriDisplay').innerText = p.stats_dri || 75;
+    document.getElementById('inspectTirDisplay').innerText = p.stats_tir || 75;
+    document.getElementById('inspectDifDisplay').innerText = p.stats_dif || 75;
+    document.getElementById('inspectPasDisplay').innerText = p.stats_pas || 75;
+    document.getElementById('inspectFisDisplay').innerText = p.stats_fis || 75;
+
+    document.getElementById('inspectCityDisplay').innerHTML = `📍 ${p.city || 'Italia'}`;
+    document.getElementById('inspectReliabilityDisplay').innerHTML = `🛡️ ${p.reliability_score || 100}% Affidabile`;
+
+    const cardFront = document.getElementById('inspectCardFront');
+    if (cardFront) {
+      cardFront.className = `fut-card-front holographic-card theme-${p.card_theme || 'gold'} p-6 flex flex-col justify-between select-none relative shadow-2xl rounded-3xl`;
+    }
+
+    updateInspectModalFollowButton(p.is_following, p.followers_count || 0);
+
+    modal.classList.remove('hidden');
+    lucide.createIcons();
+  } catch (err) {
+    console.error('Inspect error:', err);
+    showNotificationToast("Errore", "Impossibile aprire la scheda del giocatore.", "error");
+  }
+}
+
+function updateInspectModalFollowButton(isFollowing, count) {
+  const btn = document.getElementById('inspectFollowBtn');
+  const btnText = document.getElementById('inspectFollowBtnText');
+  const countElem = document.getElementById('inspectFollowersCount');
+  if (countElem) countElem.innerText = count;
+
+  const isMe = state.currentUser && state.inspectedPlayer && (
+    state.inspectedPlayer.id === state.currentUser.player_id ||
+    state.inspectedPlayer.id === 'user_' + state.currentUser.id ||
+    state.inspectedPlayer.linked_username === state.currentUser.username
+  );
+
+  if (btn && btnText) {
+    if (isMe) {
+      btn.className = "flex-1 py-3 rounded-2xl bg-slate-800 text-slate-400 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-default";
+      btnText.innerText = "La Tua Scheda";
+      btn.disabled = true;
+    } else if (isFollowing) {
+      btn.className = "flex-1 py-3 rounded-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/50 font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-lg";
+      btnText.innerText = "✓ Stai seguendo";
+      btn.disabled = false;
+    } else {
+      btn.className = "flex-1 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-lg shadow-cyan-500/25";
+      btnText.innerText = "Segui Giocatore";
+      btn.disabled = false;
+    }
+  }
+}
+
+function closeInspectPlayerCard() {
+  SoundFX.playClick();
+  const modal = document.getElementById('viewPlayerModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function toggleFollowInspectedPlayer() {
+  if (!state.inspectedPlayer) return;
+  toggleFollowPlayer(state.inspectedPlayer.id);
+}
+
+function startChatWithInspectedPlayer() {
+  if (!state.inspectedPlayer) return;
+  const p = state.inspectedPlayer;
+  closeInspectPlayerCard();
+  closePlayerSearchModal();
+  openChatCenterModal(p.id, p.name);
 }
 
 // ----------------------------------------------------
