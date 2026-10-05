@@ -1890,6 +1890,53 @@ def toggle_follow_player(player_id: str, req: FollowRequest):
         cursor.execute("INSERT OR IGNORE INTO follows (follower_id, followed_id) VALUES (?, ?)", (follower_id, player_id))
         is_following = True
 
+        # Crea notifica istantanea per l'utente che ha appena ricevuto un nuovo follower
+        try:
+            # 1. Recupera i dettagli del follower (mittente)
+            cursor.execute("""
+                SELECT u.full_name, u.username, ('user_' || u.id) as user_pid
+                FROM users u
+                WHERE u.username = ? OR ('user_' || u.id) = ? OR CAST(u.id AS TEXT) = ?
+                UNION
+                SELECT p.name as full_name, p.nickname as username, p.id as user_pid
+                FROM players p
+                WHERE p.id = ?
+                LIMIT 1
+            """, (follower_id, follower_id, follower_id, follower_id))
+            f_info = cursor.fetchone()
+            follower_name = f_info[0] if (f_info and f_info[0]) else "Un calciatore"
+            follower_username = f_info[1] if (f_info and f_info[1]) else ""
+            follower_canonical_id = f_info[2] if (f_info and f_info[2]) else follower_id
+            follower_display = f"{follower_name} (@{follower_username})" if follower_username else follower_name
+
+            # 2. Recupera l'ID / username destinatario
+            cursor.execute("""
+                SELECT u.username, ('user_' || u.id) as user_pid, u.full_name, p.id as p_id
+                FROM users u
+                LEFT JOIN players p ON (p.id = 'user_' || u.id OR p.name = u.full_name OR p.id = u.username)
+                WHERE u.username = ? OR ('user_' || u.id) = ? OR CAST(u.id AS TEXT) = ? OR p.id = ?
+                LIMIT 1
+            """, (player_id, player_id, player_id, player_id))
+            target_user = cursor.fetchone()
+            recipient_id = target_user[0] if target_user else player_id
+
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            cursor.execute("""
+                INSERT INTO notifications (
+                    recipient_id, sender_id, sender_name, match_id, match_title,
+                    type, title, message, is_read, created_at
+                ) VALUES (?, ?, ?, 0, 'Community & Follower', 'new_follower', ?, ?, 0, ?)
+            """, (
+                recipient_id,
+                follower_canonical_id,
+                follower_name,
+                "👥 Nuovo Follower!",
+                f"{follower_display} ha iniziato a seguirti su Trova l'Ultimo!",
+                now_str
+            ))
+        except Exception as notif_err:
+            print(f"Errore creazione notifica follower: {notif_err}")
+
     conn.commit()
 
     cursor.execute("SELECT COUNT(*) FROM follows WHERE followed_id = ?", (player_id,))
@@ -1918,9 +1965,9 @@ def get_player_full_card(player_id: str, viewer_id: Optional[str] = None):
         (SELECT COUNT(*) FROM follows WHERE followed_id = p.id OR (u.username IS NOT NULL AND followed_id = u.username)) as followers_count
     FROM players p
     LEFT JOIN users u ON (p.id = 'user_' || u.id OR p.id = u.username OR p.name = u.full_name)
-    WHERE p.id = ? OR p.name = ? OR (u.username IS NOT NULL AND u.username = ?)
+    WHERE p.id = ? OR p.name = ? OR (u.username IS NOT NULL AND u.username = ?) OR ('user_' || u.id = ?) OR (CAST(u.id AS TEXT) = ?)
     LIMIT 1
-    """, (player_id, player_id, player_id))
+    """, (player_id, player_id, player_id, player_id, player_id))
 
     row = cursor.fetchone()
     if not row:
