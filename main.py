@@ -1902,9 +1902,42 @@ def admin_update_settings(settings: SettingsUpdate):
     conn.close()
     return {"success": True, "message": "Impostazioni della piattaforma salvate con successo!"}
 
-# Serve static frontend files
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+# Serve static frontend files (resilient to both static/ subfolder and root flat files)
+BASE_DIR = os.path.dirname(__file__)
 
 @app.get("/")
 def read_root():
-    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+    for candidate in [os.path.join(STATIC_DIR, "index.html"), os.path.join(BASE_DIR, "index.html")]:
+        if os.path.isfile(candidate):
+            return FileResponse(candidate)
+    return {"message": "Trova l'Ultimo running"}
+
+@app.get("/manifest.json")
+def serve_manifest():
+    for candidate in [os.path.join(STATIC_DIR, "manifest.json"), os.path.join(BASE_DIR, "manifest.json")]:
+        if os.path.isfile(candidate):
+            return FileResponse(candidate)
+    raise HTTPException(status_code=404)
+
+@app.get("/sw.js")
+def serve_sw():
+    for candidate in [os.path.join(STATIC_DIR, "sw.js"), os.path.join(BASE_DIR, "sw.js")]:
+        if os.path.isfile(candidate):
+            return FileResponse(candidate, media_type="application/javascript")
+    raise HTTPException(status_code=404)
+
+@app.get("/static/{file_path:path}")
+def serve_static_file(file_path: str):
+    candidates = [
+        os.path.join(STATIC_DIR, file_path),
+        os.path.join(BASE_DIR, file_path),
+        os.path.join(BASE_DIR, os.path.basename(file_path))
+    ]
+    for c in candidates:
+        if os.path.isfile(c):
+            return FileResponse(c)
+    raise HTTPException(status_code=404, detail="File non trovato")
+
+if os.path.isdir(STATIC_DIR) and any(os.scandir(STATIC_DIR)):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
