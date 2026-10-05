@@ -1,0 +1,385 @@
+/* Trova l'Ultimo - Style & Holographic Card Effects */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Bebas+Neue&family=Space+Grotesk:wght@500;700&display=swap');
+
+:root {
+  --pitch-green: #0a4d2c;
+  --pitch-line: rgba(255, 255, 255, 0.4);
+  --neon-lime: #10b981;
+  --neon-gold: #f59e0b;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #070b12;
+  color: #f8fafc;
+  overflow-x: hidden;
+}
+
+.font-bebas {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.font-space {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
+}
+
+/* Background Atmosphere */
+.stadium-bg {
+  background: 
+    radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
+    #070b12;
+}
+
+/* High Contrast Glassmorphism Panels */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.90);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+
+.glass-panel-glow {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+}
+
+.glass-panel-admin {
+  background: rgba(26, 16, 23, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  box-shadow: 0 0 30px rgba(244, 63, 94, 0.15);
+}
+
+/* 3D FUT Card Container & Perspective */
+.card-perspective-container {
+  perspective: 1200px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.fut-card-wrapper {
+  transform-style: preserve-3d;
+  transition: transform 0.08s ease-out;
+  will-change: transform;
+  width: 100%;
+  height: 100%;
+}
+
+.fut-card-wrapper.smooth-reset {
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.fut-card-flipper {
+  transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.fut-card-flipper.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.fut-card-front,
+.fut-card-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  width: 100%;
+  height: 100%;
+  border-radius: 1.5rem;
+  transform-style: preserve-3d;
+}
+
+.fut-card-front {
+  transform: rotateY(0deg);
+  position: relative;
+  z-index: 10;
+}
+
+.fut-card-back {
+  transform: rotateY(180deg);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+}
+
+/* Proper interaction and z-index switching when card is flipped */
+.fut-card-flipper.is-flipped .fut-card-front {
+  pointer-events: none;
+  z-index: 5;
+}
+
+.fut-card-flipper.is-flipped .fut-card-back {
+  pointer-events: auto;
+  z-index: 20;
+}
+
+.fut-card-flipper:not(.is-flipped) .fut-card-front {
+  pointer-events: auto;
+  z-index: 20;
+}
+
+.fut-card-flipper:not(.is-flipped) .fut-card-back {
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Holographic / Shimmer Layers */
+.holographic-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.holographic-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--shine-x, 50%) var(--shine-y, 50%),
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.1) 30%,
+    transparent 70%
+  );
+  mix-blend-mode: overlay;
+  transition: opacity 0.2s ease;
+  z-index: 25;
+}
+
+/* Card Themes with High Contrast */
+/* 1. GOLD RARE */
+.theme-gold {
+  background: linear-gradient(135deg, #1f1b0c 0%, #3e3215 30%, #201a0a 70%, #443714 100%);
+  border: 2px solid #fbbf24;
+  box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3), inset 0 0 20px rgba(251, 191, 36, 0.2);
+}
+
+/* 2. ICON / LEGEND */
+.theme-icon {
+  background: linear-gradient(135deg, #13141f 0%, #1e2136 40%, #10121d 100%);
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 10px 30px rgba(226, 232, 240, 0.25), inset 0 0 20px rgba(226, 232, 240, 0.15);
+}
+
+/* 3. NEON CYBER */
+.theme-neon {
+  background: linear-gradient(135deg, #051a24 0%, #082f49 50%, #02131e 100%);
+  border: 2px solid #22d3ee;
+  box-shadow: 0 10px 30px rgba(34, 211, 238, 0.35), inset 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+/* 4. EMERALD TURF */
+.theme-emerald {
+  background: linear-gradient(135deg, #041f15 0%, #064e3b 50%, #021a11 100%);
+  border: 2px solid #34d399;
+  box-shadow: 0 10px 30px rgba(52, 211, 153, 0.35), inset 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+/* 5. RETRO PANINI */
+.theme-panini {
+  background: linear-gradient(135deg, #2e0854 0%, #581c87 50%, #1f0438 100%);
+  border: 2px solid #f43f5e;
+  box-shadow: 0 10px 30px rgba(244, 63, 94, 0.35), inset 0 0 20px rgba(244, 63, 94, 0.2);
+}
+
+/* Pitch Board Styles */
+.pitch-board {
+  position: relative;
+  background: radial-gradient(circle at center, #15803d 0%, #166534 60%, #14532d 100%);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5), 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.pitch-stripes {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 40px,
+    rgba(0, 0, 0, 0.08) 40px,
+    rgba(0, 0, 0, 0.08) 80px
+  );
+  pointer-events: none;
+}
+
+/* Radar Pulse for Missing Player Slot */
+@keyframes radar-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 18px rgba(239, 68, 68, 0);
+    transform: scale(1.08);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    transform: scale(1);
+  }
+}
+
+.missing-slot-radar {
+  animation: radar-pulse 1.8s infinite ease-in-out;
+}
+
+@keyframes radar-pulse-cyan {
+  0% {
+    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.85);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(6, 182, 212, 0);
+    transform: scale(1.06);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
+    transform: scale(1);
+  }
+}
+
+.missing-slot-radar-cyan {
+  animation: radar-pulse-cyan 1.8s infinite ease-in-out;
+}
+
+/* Shimmer Button */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transform: rotate(30deg);
+  animation: shimmer-swipe 3s infinite;
+}
+
+@keyframes shimmer-swipe {
+  0% { transform: translateX(-100%) rotate(30deg); }
+  30%, 100% { transform: translateX(100%) rotate(30deg); }
+}
+
+/* Avatar Selection Card */
+.avatar-option-card {
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+.avatar-option-card:hover {
+  transform: translateY(-3px) scale(1.04);
+  border-color: #10b981;
+}
+.avatar-option-card.selected {
+  border-color: #fbbf24;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+}
+
+/* High Contrast Star Rating Component */
+.star-btn {
+  color: #64748b;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.star-btn.active, .star-btn:hover {
+  color: #fbbf24;
+  transform: scale(1.2);
+}
+
+/* Mobile PWA & Touch Optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile Typography & Layout Enhancements */
+@media (max-width: 640px) {
+  body {
+    font-size: 13.5px;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+
+  .glass-panel {
+    border-radius: 1.25rem;
+  }
+}
+
+/* Uniform Date & Time Inputs on Mobile */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  min-height: 44px;
+  height: 44px;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85);
+  cursor: pointer;
+  padding: 2px;
+}
+
+
+

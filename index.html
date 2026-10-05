@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Trova l'Ultimo | Mai più con uno in meno</title>
+  
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <meta name="theme-color" content="#020617">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Trova l'Ultimo">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/app-logo-512.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/static/app-logo-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/static/app-logo-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/app-logo-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/static/app-logo-512.png">
+  <link rel="icon" type="image/svg+xml" href="/static/app-logo.svg">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/style.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            pitch: {
+              DEFAULT: '#10b981',
+              dark: '#064e3b',
+              glow: '#34d399',
+            },
+            stadium: {
+              card: '#0f172a',
+              dark: '#070b12',
+              border: '#1e293b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="stadium-bg min-h-screen text-slate-100 flex flex-col antialiased selection:bg-emerald-500 selection:text-black pb-24 md:pb-6">
+
+  <!-- TOP TICKER / LIVE ALERT -->
+  <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-slate-950 font-black text-xs md:text-sm py-2 px-3 shadow-md flex items-center justify-center text-center">
+    <div class="flex items-center justify-center gap-2 max-w-full">
+      <span class="bg-black text-emerald-300 text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full tracking-wider shadow flex-shrink-0 flex items-center gap-1">🚨 SOS</span>
+      <span id="urgentTickerText" class="text-slate-950 font-black tracking-wide drop-shadow-sm text-[11px] sm:text-xs text-center">Mai più con uno in meno: Cerca l'ultimo uomo o scendi in campo!</span>
+    </div>
+    <div class="hidden lg:flex items-center gap-4 text-xs font-black text-slate-950 ml-4">
+      <span id="openMatchesCountBadge" class="bg-black/20 px-2 py-0.5 rounded">⚽ 4 Partite Aperte</span>
+      <span>•</span>
+      <span>⭐ 100% Affidabilità Verificata</span>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-slate-800 shadow-2xl">
+    <div class="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
+      
+      <!-- Brand Logo (Static, non-clickable) -->
+      <div class="flex items-center gap-2 sm:gap-3 py-1.5 select-none cursor-default">
+        <div class="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
+          <!-- Ambient halo (stationary) -->
+          <div class="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-400 opacity-50 blur-md"></div>
+          
+          <!-- Static Emblem -->
+          <div class="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-950 border border-emerald-400/50 p-1 flex items-center justify-center shadow-xl shadow-emerald-500/20">
+            <svg viewBox="0 0 48 48" fill="none" class="w-full h-full">
+              <defs>
+                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#10b981" />
+                  <stop offset="50%" stop-color="#06b6d4" />
+                  <stop offset="100%" stop-color="#f59e0b" />
+                </linearGradient>
+                <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fbbf24" />
+                  <stop offset="100%" stop-color="#f97316" />
+                </linearGradient>
+              </defs>
+              <!-- Soccer Ball Outer -->
+              <circle cx="24" cy="24" r="18" stroke="url(#logoGrad)" stroke-width="2.5" fill="#090d16" />
+              <!-- Central Pentagon -->
+              <polygon points="24,16 30,20 28,27 20,27 18,20" fill="url(#logoGrad)" opacity="0.85" />
+              <!-- Radial Soccer Lines -->
+              <line x1="24" y1="16" x2="24" y2="7" stroke="url(#logoGrad)" stroke-width="1.8" />
+              <line x1="30" y1="20" x2="39" y2="17" stroke="url(#logoGrad)" stroke-width="1.8" />
+              <line x1="28" y1="27" x2="35" y2="36" stroke="url(#logoGrad)" stroke-width="1.8" />
+              <line x1="20" y1="27" x2="13" y2="36" stroke="url(#logoGrad)" stroke-width="1.8" />
+              <line x1="18" y1="20" x2="9" y2="17" stroke="url(#logoGrad)" stroke-width="1.8" />
+              <!-- Dynamic Lightning Bolt 'L'Ultimo' -->
+              <path d="M27 6 L17 24 L23.5 24 L19.5 42 L31 20 L24.5 20 Z" fill="url(#boltGrad)" filter="drop-shadow(0 0 5px rgba(251,191,36,0.9))" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center">
+            <h1 class="text-base sm:text-xl md:text-2xl font-black tracking-tight font-space uppercase bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-200 to-amber-300 drop-shadow">
+              TROVA L'ULTIMO
+            </h1>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Navigation Tabs (Hidden on Mobile) -->
+      <nav class="hidden md:flex items-center gap-1.5 lg:gap-2">
+        <button onclick="switchTab('feed')" id="nav-feed" class="nav-tab-btn active px-3 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-1.5 transition-all bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25">
+          <i data-lucide="flame" class="w-4 h-4"></i>
+          <span>Partite SOS</span>
+        </button>
+
+        <!-- NEW TAB: CERCA GIOCATORE / SCOUTING -->
+        <button onclick="switchTab('scouting')" id="nav-scouting" class="nav-tab-btn px-3 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 text-slate-200 hover:text-white hover:bg-slate-800/80 transition-all">
+          <i data-lucide="radar" class="w-4 h-4 text-cyan-400"></i>
+          <span>Cerca Giocatore</span>
+        </button>
+
+        <button onclick="requireAuthAndExecute(() => switchTab('create'))" id="nav-create" class="nav-tab-btn px-3 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 text-slate-200 hover:text-white hover:bg-slate-800/80 transition-all">
+          <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-400"></i>
+          <span>Carica Partita</span>
+        </button>
+
+        <button onclick="switchTab('card')" id="nav-card" class="nav-tab-btn px-3 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 text-slate-200 hover:text-white hover:bg-slate-800/80 transition-all">
+          <i data-lucide="credit-card" class="w-4 h-4 text-amber-400"></i>
+          <span>Mia Scheda</span>
+        </button>
+
+        <button onclick="switchTab('chat')" id="nav-chat" class="nav-tab-btn px-3 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 text-slate-200 hover:text-white hover:bg-slate-800/80 transition-all relative">
+          <i data-lucide="message-circle" class="w-4 h-4 text-cyan-400"></i>
+          <span>Chat</span>
+          <span id="chatBadgeDot" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-cyan-400 rounded-full animate-ping"></span>
+        </button>
+
+        <!-- Hidden Admin Tab (Only visible if logged in with private admin credentials) -->
+        <button onclick="switchTab('admin')" id="nav-admin" class="nav-tab-btn hidden px-3 py-2 rounded-xl text-xs md:text-sm font-black flex items-center gap-1.5 bg-rose-500/20 text-rose-300 border border-rose-500/50 hover:bg-rose-500 hover:text-slate-950 transition-all animate-pulse">
+          <i data-lucide="shield-check" class="w-4 h-4 text-rose-400"></i>
+          <span>PANNELLO ADMIN</span>
+        </button>
+      </nav>
+
+      <!-- Right Header Actions (Auth / Profile + Notifications Bell) -->
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        <!-- NOTIFICATIONS BELL BUTTON -->
+        <button onclick="openNotificationsModal()" id="headerNotificationsBtn" class="relative p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center justify-center active:scale-95 shadow-sm" title="Notifiche">
+          <i data-lucide="bell" class="w-4 h-4 text-amber-400"></i>
+          <span id="headerNotificationsBadge" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center animate-bounce shadow">0</span>
+        </button>
+
+        <div id="authNavContainer" class="flex-shrink-0">
+          <button onclick="openAuthModal()" id="loginBtn" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 text-[11px] sm:text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition whitespace-nowrap shadow-sm">
+            <i data-lucide="user" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Accedi / Registrati</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- FLOATING IN-APP NOTIFICATION TOAST -->
+  <div id="inAppNotificationToast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[80] w-[92%] max-w-md hidden transition-all duration-300 transform -translate-y-4 shadow-2xl">
+    <div id="inAppToastCard" class="p-3.5 rounded-2xl bg-slate-900/95 border-2 border-amber-400/80 backdrop-blur-xl shadow-2xl flex items-center justify-between gap-3 cursor-pointer hover:border-amber-300 transition">
+      <div class="flex items-center gap-3 min-w-0">
+        <div id="inAppToastIcon" class="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/40 flex items-center justify-center text-lg flex-shrink-0">
+          🔔
+        </div>
+        <div class="min-w-0">
+          <h5 id="inAppToastTitle" class="text-xs font-black text-white truncate">Nuova Notifica</h5>
+          <p id="inAppToastMessage" class="text-[11px] text-slate-300 truncate">Hai ricevuto un aggiornamento importante.</p>
+        </div>
+      </div>
+      <button onclick="dismissNotificationToast(event)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center flex-shrink-0 text-xs">
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- ONBOARDING WELCOME BANNER (If newly registered or guided) -->
+  <div id="onboardingBanner" class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4">
+    <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-900 border-2 border-emerald-500/60 shadow-xl flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-lg">
+          ⚽
+        </div>
+        <div>
+          <h4 class="font-bold text-white text-sm" id="onboardingWelcomeName">Benvenuto in Trova l'Ultimo!</h4>
+          <p class="text-xs text-slate-300">Completa la tua Scheda Giocatore 3D: scegli il tuo avatar disegnato, regola le tue statistiche e scendi in campo!</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="switchTab('create')" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 transition shadow shadow-emerald-500/20 whitespace-nowrap">
+          <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+          Carica Partita
+        </button>
+        <button onclick="dismissOnboarding()" class="p-1.5 text-slate-400 hover:text-white rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PENDING POST-MATCH REVIEW BANNER -->
+  <div id="pendingReviewBanner" class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4">
+    <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-950 via-slate-900 to-slate-900 border-2 border-amber-500/70 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-2xl shadow-lg shadow-amber-500/30 flex-shrink-0 animate-bounce">
+          ⭐
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="bg-amber-400 text-slate-950 text-[10px] uppercase font-black px-2 py-0.5 rounded-full">FEEDBACK POST-PARTITA IN ATTESA</span>
+            <span id="pendingReviewMatchDate" class="text-xs text-amber-300 font-bold">Partita Conclusa</span>
+          </div>
+          <h4 class="font-extrabold text-white text-sm sm:text-base mt-0.5" id="pendingReviewMatchTitle">La tua partita è terminata!</h4>
+          <p class="text-xs text-slate-300" id="pendingReviewPlayerDesc">Un giocatore si è unito alla tua partita: lascia il tuo feedback su affidabilità persona e fedeltà della sua scheda calcio!</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="openPendingReviewModal()" class="btn-shimmer px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg shadow-amber-400/25 transition whitespace-nowrap">
+          <i data-lucide="star" class="w-4 h-4 fill-slate-950"></i>
+          Valuta Giocatore Ora
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD ADJUSTMENT ADVICE BANNER (FEEDBACK RICEVUTO DA ORGANIZZATORE) -->
+  <div id="cardAdviceBanner" class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4">
+    <div class="p-4 rounded-2xl bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-900 border-2 border-cyan-500/70 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-cyan-500 text-slate-950 flex items-center justify-center font-black text-2xl shadow-lg shadow-cyan-500/30 flex-shrink-0 animate-pulse">
+          🎯
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="bg-cyan-400 text-slate-950 text-[10px] uppercase font-black px-2 py-0.5 rounded-full">CONSIGLIO SCHEDA POST-PARTITA</span>
+            <span id="cardAdviceMatchTitle" class="text-xs text-cyan-300 font-bold">Ultima partita</span>
+          </div>
+          <h4 class="font-extrabold text-white text-sm sm:text-base mt-0.5" id="cardAdviceHeader">L'organizzatore ha suggerito di calibrare la tua scheda!</h4>
+          <p class="text-xs text-slate-300" id="cardAdviceMessage">È stata segnalata una discrepanza tra le abilità in campo e le statistiche dichiarate. Rivedi la tua scheda per mantenere alto il tuo indice di affidabilità.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="goToCardToReviewNotice()" class="btn-shimmer px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg shadow-cyan-400/25 transition whitespace-nowrap">
+          <i data-lucide="edit-3" class="w-4 h-4"></i>
+          Rivedi e Aggiorna la Mia Scheda
+        </button>
+        <button onclick="dismissCardAdvice()" class="p-2 text-slate-400 hover:text-white rounded-lg" title="Chiudi avviso">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: BACHECA PARTITE SOS (FEED) -->
+    <!-- ========================================== -->
+    <section id="tab-feed" class="tab-pane active space-y-6">
+      
+      <!-- HERO BANNER -->
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 border border-emerald-500/30 p-5 sm:p-8 shadow-2xl text-center sm:text-left flex flex-col items-center sm:items-start">
+        <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+          <i data-lucide="trophy" class="w-96 h-96 text-emerald-400"></i>
+        </div>
+        <div class="relative z-10 max-w-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 mb-3 shadow">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            IL SERVIZIO SALVA-CALCETTO
+          </span>
+          <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight font-space leading-tight text-white">
+            Mai più <span class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300">con uno in meno</span>.
+          </h2>
+          <p class="mt-2 text-xs sm:text-base text-slate-200 leading-relaxed font-medium max-w-lg">
+            Ti manca un qualsiasi ruolo per stasera? Trovalo in pochi secondi! Oppure candidati tu e scendi in campo come l'eroe della partita!
+          </p>
+
+          <div class="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2.5 w-full sm:w-auto">
+            <button onclick="requireAuthAndExecute(() => switchTab('create'))" class="btn-shimmer px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 transition">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              Carica la tua Partita
+            </button>
+            <button onclick="switchTab('scouting')" class="px-5 py-3 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 font-bold text-xs sm:text-sm border border-cyan-500/40 flex items-center justify-center gap-2 transition">
+              <i data-lucide="radar" class="w-4 h-4 text-cyan-400"></i>
+              Radar Giocatori Disponibili
+            </button>
+            <button onclick="openFeedbackModalDirect()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs sm:text-sm border border-slate-700 flex items-center justify-center gap-2 transition">
+              <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
+              Valuta Giocatore
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="glass-panel p-4 md:p-5 rounded-2xl border border-slate-800 shadow-xl space-y-3.5">
+        
+        <!-- Formats Row (5, 6, 7) + Radar Radius -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-center">
+          <div class="flex flex-wrap items-center justify-center gap-2.5 w-full sm:w-auto">
+            <div class="flex items-center justify-center gap-2">
+              <span class="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1">
+                <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-emerald-400"></i> Formato:
+              </span>
+              <div class="flex gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button onclick="setFilterFormat('all')" id="fmt-all" class="fmt-btn active px-2.5 py-1 rounded-lg text-xs font-black transition bg-emerald-500 text-slate-950">Tutti</button>
+                <button onclick="setFilterFormat('5')" id="fmt-5" class="fmt-btn px-2.5 py-1 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition">⚽ A 5</button>
+                <button onclick="setFilterFormat('6')" id="fmt-6" class="fmt-btn px-2.5 py-1 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition">⚽ A 6</button>
+                <button onclick="setFilterFormat('7')" id="fmt-7" class="fmt-btn px-2.5 py-1 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition">⚽ A 7</button>
+              </div>
+            </div>
+
+            <!-- Radar Radius -->
+            <div class="flex items-center justify-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 text-xs">
+              <i data-lucide="radar" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span class="text-[11px] font-bold text-slate-300 uppercase">Radar:</span>
+              <select id="matchRadiusSelect" onchange="renderMatches()" class="bg-transparent text-emerald-300 text-xs font-bold focus:outline-none cursor-pointer">
+                <option value="15" class="bg-slate-900 text-white">Entro 15 km</option>
+                <option value="30" class="bg-slate-900 text-white" selected>Entro 30 km</option>
+                <option value="50" class="bg-slate-900 text-white">Entro 50 km</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Search input -->
+          <div class="relative w-full sm:w-64">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              type="text" 
+              id="searchInput" 
+              placeholder="Cerca per città (es. Milano, Roma)..."
+              oninput="onSearchChange()"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-center sm:text-left"
+            >
+          </div>
+        </div>
+
+        <!-- Roles Filter Pills -->
+        <div class="flex items-center justify-center flex-wrap gap-1.5 pt-1 text-xs">
+          <span class="text-[11px] font-black uppercase tracking-wider text-slate-300 mr-1">Ruolo:</span>
+          <button onclick="setFilterRole('all')" id="role-all" class="role-pill active px-2.5 py-1 rounded-full text-xs font-black border transition bg-emerald-500/20 border-emerald-500 text-emerald-300">Tutti</button>
+          <button onclick="setFilterRole('Portiere')" id="role-Portiere" class="role-pill px-2.5 py-1 rounded-full text-xs font-bold border border-slate-700 text-slate-200 hover:border-amber-400 hover:text-amber-300 transition flex items-center gap-1">
+            🧤 Portiere <span class="bg-amber-500 text-slate-950 text-[10px] px-1 rounded font-black">SOS</span>
+          </button>
+          <button onclick="setFilterRole('Difensore')" id="role-Difensore" class="role-pill px-2.5 py-1 rounded-full text-xs font-bold border border-slate-700 text-slate-200 hover:border-blue-400 hover:text-blue-300 transition">
+            🛡️ Difensore
+          </button>
+          <button onclick="setFilterRole('Centrocampista')" id="role-Centrocampista" class="role-pill px-2.5 py-1 rounded-full text-xs font-bold border border-slate-700 text-slate-200 hover:border-emerald-400 hover:text-emerald-300 transition">
+            ⚙️ Centrocampista
+          </button>
+          <button onclick="setFilterRole('Attaccante')" id="role-Attaccante" class="role-pill px-2.5 py-1 rounded-full text-xs font-bold border border-slate-700 text-slate-200 hover:border-rose-400 hover:text-rose-300 transition">
+            ⚡ Attaccante
+          </button>
+          <button onclick="setFilterRole('Jolly')" id="role-Jolly" class="role-pill px-2.5 py-1 rounded-full text-xs font-bold border border-slate-700 text-slate-200 hover:border-purple-400 hover:text-purple-300 transition">
+            🃏 Jolly
+          </button>
+        </div>
+
+      </div>
+
+      <!-- MATCHES FEED CONTAINER -->
+      <div id="matchesFeedContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
+        <div class="col-span-full py-12 text-center text-slate-400">
+          <i data-lucide="loader" class="w-8 h-8 animate-spin mx-auto text-emerald-400 mb-2"></i>
+          Caricamento partite in corso...
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: CERCA GIOCATORE / SCOUTING RADAR -->
+    <!-- ========================================== -->
+    <section id="tab-scouting" class="tab-pane hidden space-y-6">
+      
+      <!-- Scouting Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800 text-center sm:text-left items-center sm:items-start">
+        <div class="flex flex-col items-center sm:items-start">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 mb-1">
+            <i data-lucide="radar" class="w-3.5 h-3.5"></i>
+            RADAR DISPONIBILITÀ GIOCATORI
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight font-space text-white">Cerca Giocatore & Scouting</h2>
+          <p class="text-xs sm:text-sm text-slate-300 font-medium max-w-xl">Trova giocatori liberi stasera nella tua zona, oppure attiva la tua disponibilità per essere scoutato da altri team!</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 w-full sm:w-auto">
+          <button onclick="openChatCenterModal()" class="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 text-xs font-bold flex items-center justify-center gap-1.5 shadow transition">
+            <i data-lucide="message-circle" class="w-4 h-4 text-cyan-400"></i>
+            I Tuoi Messaggi & Chat
+          </button>
+          <button onclick="openAvailabilityModal()" class="btn-shimmer px-5 py-2.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 transition">
+            <i data-lucide="zap" class="w-4 h-4"></i>
+            Attiva la Mia Disponibilità
+          </button>
+        </div>
+      </div>
+
+      <!-- Scouting Filters Bar -->
+      <div class="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3.5">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-center">
+          <!-- Role Filters -->
+          <div class="flex items-center justify-center flex-wrap gap-1.5 text-xs">
+            <span class="text-xs font-black uppercase text-slate-300 mr-1">Ruolo:</span>
+            <button onclick="setScoutFilterRole('all')" id="scout-role-all" class="scout-role-btn active px-3 py-1 rounded-full text-xs font-black bg-cyan-500/20 border border-cyan-500 text-cyan-300">Tutti</button>
+            <button onclick="setScoutFilterRole('Portiere')" id="scout-role-Portiere" class="scout-role-btn px-3 py-1 rounded-full text-xs font-bold border border-slate-700 text-slate-200">🧤 Portiere</button>
+            <button onclick="setScoutFilterRole('Difensore')" id="scout-role-Difensore" class="scout-role-btn px-3 py-1 rounded-full text-xs font-bold border border-slate-700 text-slate-200">🛡️ Difensore</button>
+            <button onclick="setScoutFilterRole('Centrocampista')" id="scout-role-Centrocampista" class="scout-role-btn px-3 py-1 rounded-full text-xs font-bold border border-slate-700 text-slate-200">⚙️ Centrocampista</button>
+            <button onclick="setScoutFilterRole('Attaccante')" id="scout-role-Attaccante" class="scout-role-btn px-3 py-1 rounded-full text-xs font-bold border border-slate-700 text-slate-200">⚡ Attaccante</button>
+          </div>
+
+          <div class="w-full sm:w-64">
+            <input 
+              type="text" 
+              id="scoutSearchInput" 
+              placeholder="Cerca per città (es. Milano, Roma)..."
+              oninput="fetchAvailabilities()"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 text-center sm:text-left"
+            >
+          </div>
+        </div>
+
+        <!-- Secondary Sorting: Caratteristiche & Formato + Radar Radius -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2.5 border-t border-slate-800/60 text-xs text-center">
+          <div class="flex items-center justify-center flex-wrap gap-1.5">
+            <span class="text-[11px] font-black uppercase text-slate-400 mr-1">Ordina:</span>
+            <button onclick="setScoutTraitFilter('all')" id="scout-trait-all" class="scout-trait-btn active px-2.5 py-1 rounded-lg font-bold bg-slate-800 text-cyan-300 border border-cyan-500/50">Vicinanza & Affidabilità</button>
+            <button onclick="setScoutTraitFilter('reliability')" id="scout-trait-reliability" class="scout-trait-btn px-2.5 py-1 rounded-lg font-bold bg-slate-900 text-slate-300 border border-slate-700 hover:text-white">🛡️ Affidabilità</button>
+            <button onclick="setScoutTraitFilter('vel')" id="scout-trait-vel" class="scout-trait-btn px-2.5 py-1 rounded-lg font-bold bg-slate-900 text-slate-300 border border-slate-700 hover:text-white">⚡ Velocità</button>
+            <button onclick="setScoutTraitFilter('tir')" id="scout-trait-tir" class="scout-trait-btn px-2.5 py-1 rounded-lg font-bold bg-slate-900 text-slate-300 border border-slate-700 hover:text-white">🎯 Tiro</button>
+            <button onclick="setScoutTraitFilter('dif')" id="scout-trait-dif" class="scout-trait-btn px-2.5 py-1 rounded-lg font-bold bg-slate-900 text-slate-300 border border-slate-700 hover:text-white">🧱 Difesa</button>
+          </div>
+
+          <div class="flex items-center justify-center flex-wrap gap-3">
+            <div class="flex items-center justify-center gap-1.5">
+              <span class="text-[11px] font-black uppercase text-slate-400">Formato:</span>
+              <select id="scoutFormatSelect" onchange="renderAvailabilities()" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-1 font-medium focus:outline-none focus:border-cyan-500">
+                <option value="all">Tutti i Formati</option>
+                <option value="5">Solo Calcio a 5</option>
+                <option value="6">Solo Calcio a 6</option>
+                <option value="7">Solo Calciotto a 7</option>
+              </select>
+            </div>
+
+            <!-- Scouting Radar Radius -->
+            <div class="flex items-center justify-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 text-xs">
+              <i data-lucide="radar" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span class="text-[11px] font-bold text-slate-300 uppercase">Radar:</span>
+              <select id="scoutRadiusSelect" onchange="renderAvailabilities()" class="bg-transparent text-cyan-300 text-xs font-bold focus:outline-none cursor-pointer">
+                <option value="15" class="bg-slate-900 text-white">Entro 15 km</option>
+                <option value="30" class="bg-slate-900 text-white" selected>Entro 30 km</option>
+                <option value="50" class="bg-slate-900 text-white">Entro 50 km</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Availabilities Grid -->
+      <div id="availabilitiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5"></div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: CARICA PARTITA (CREATE) -->
+    <!-- ========================================== -->
+    <section id="tab-create" class="tab-pane hidden space-y-6">
+      
+      <div class="max-w-3xl mx-auto">
+        
+        <div class="text-center mb-8">
+          <div class="inline-flex p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-3">
+            <i data-lucide="calendar-plus" class="w-8 h-8"></i>
+          </div>
+          <div class="flex items-center justify-center gap-3">
+            <h2 id="createMatchHeaderTitle" class="text-3xl font-extrabold tracking-tight font-space text-white">Carica la tua Partita</h2>
+            <button type="button" id="cancelEditMatchBtn" onclick="cancelMatchEditMode()" class="hidden px-3.5 py-1.5 rounded-xl bg-slate-800 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold transition">
+              Annulla Modifica
+            </button>
+          </div>
+          <p id="createMatchHeaderDesc" class="text-sm text-slate-300 mt-1">Manca un giocatore? Pubblica la partita: chi si candida vedrà il tuo numero per scriverti direttamente su WhatsApp!</p>
+        </div>
+
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-2xl">
+          <form id="createMatchForm" onsubmit="handleCreateMatch(event)" class="space-y-6">
+            <input type="hidden" name="match_edit_id" id="createMatchEditId" value="">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2">
+                  Titolo Partita / Chiamata <span class="text-rose-400">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  name="title" 
+                  required
+                  placeholder="Es. Sfida tra colleghi - Manca 1 portiere!"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium"
+                >
+              </div>
+
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2">
+                  Formato Campo <span class="text-rose-400">*</span>
+                </label>
+                <select 
+                  name="format" 
+                  id="createFormatSelect"
+                  onchange="onFormatChange()"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium"
+                >
+                  <option value="5">⚽ Calcio a 5 (5v5 • max 9 mancanti)</option>
+                  <option value="6">⚽ Calcio a 6 (6v6 • max 11 mancanti)</option>
+                  <option value="7">⚽ Calcio a 7 (7v7 • max 13 mancanti)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950 border border-emerald-500/30 space-y-4 shadow-inner">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <i data-lucide="user-x" class="w-4 h-4"></i> Quanti giocatori mancano?
+                  </span>
+                  <p id="missingCountHint" class="text-xs text-slate-300 font-medium">Max 9 mancanti (Calcio a 5: 10 giocatori in campo, tu sei già 1)</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="adjustMissingCount(-1)" class="w-8 h-8 rounded-lg bg-slate-800 text-white hover:bg-slate-700 flex items-center justify-center font-bold text-lg">-</button>
+                  <span id="missingCountDisplay" class="w-8 text-center font-black text-xl text-emerald-400">1</span>
+                  <button type="button" onclick="adjustMissingCount(1)" class="w-8 h-8 rounded-lg bg-slate-800 text-white hover:bg-slate-700 flex items-center justify-center font-bold text-lg">+</button>
+                  <input type="hidden" name="missing_count" id="missingCountInput" value="1">
+                </div>
+              </div>
+
+              <!-- Ruolo dell'Organizzatore / Capitano in campo -->
+              <div class="pt-2 border-t border-slate-800">
+                <label class="block text-xs font-black uppercase tracking-wider text-amber-300 mb-2 flex items-center gap-1.5">
+                  <span>👑 Il tuo ruolo in campo (Capitano) <span class="text-rose-400">*</span></span>
+                </label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="createOrganizerRoleSelector">
+                  <label class="cursor-pointer">
+                    <input type="radio" name="organizer_role" value="Portiere" class="hidden peer">
+                    <span class="peer-checked:bg-amber-400 peer-checked:text-slate-950 peer-checked:border-amber-300 px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 text-xs font-black text-slate-200 flex items-center justify-center gap-1.5 transition text-center shadow-sm">
+                      🧤 Portiere
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="organizer_role" value="Difensore" class="hidden peer">
+                    <span class="peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-400 px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 text-xs font-black text-slate-200 flex items-center justify-center gap-1.5 transition text-center shadow-sm">
+                      🛡️ Difensore
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="organizer_role" value="Centrocampista" checked class="hidden peer">
+                    <span class="peer-checked:bg-emerald-500 peer-checked:text-slate-950 peer-checked:border-emerald-400 px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 text-xs font-black text-slate-200 flex items-center justify-center gap-1.5 transition text-center shadow-sm">
+                      ⚙️ Centrocampista
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="organizer_role" value="Attaccante" class="hidden peer">
+                    <span class="peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-400 px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 text-xs font-black text-slate-200 flex items-center justify-center gap-1.5 transition text-center shadow-sm">
+                      ⚡ Attaccante
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2">
+                  Ruoli ricercati <span class="text-amber-300">* (Puoi selezionarne più di uno)</span>
+                </label>
+                <div class="flex flex-wrap gap-2" id="createRolesSelector">
+                  <label class="cursor-pointer">
+                    <input type="checkbox" name="roles" value="Portiere" class="hidden peer">
+                    <span class="peer-checked:bg-amber-400 peer-checked:text-slate-950 peer-checked:border-amber-300 px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition">
+                      🧤 Portiere
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" name="roles" value="Difensore" class="hidden peer">
+                    <span class="peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-400 px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition">
+                      🛡️ Difensore
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" name="roles" value="Centrocampista" checked class="hidden peer">
+                    <span class="peer-checked:bg-emerald-500 peer-checked:text-slate-950 peer-checked:border-emerald-400 px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition">
+                      ⚙️ Centrocampista
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" name="roles" value="Attaccante" class="hidden peer">
+                    <span class="peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-400 px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition">
+                      ⚡ Attaccante
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" name="roles" value="Jolly" class="hidden peer">
+                    <span class="peer-checked:bg-purple-500 peer-checked:text-white peer-checked:border-purple-400 px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition">
+                      🃏 Jolly / Va bene chiunque
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Luogo, Indirizzo e GPS -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+                  <i data-lucide="map-pin" class="w-4 h-4"></i> Localizzazione Partita
+                </span>
+                <button type="button" onclick="detectGPSLocation()" class="px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-bold border border-emerald-500/40 flex items-center gap-1.5 shadow transition">
+                  <i data-lucide="navigation" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  Rileva Posizione (GPS)
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">
+                    Nome Centro Sportivo <span class="text-rose-400">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="createFieldName"
+                    name="field_name" 
+                    required
+                    placeholder="Es. Gymnica Sport Village"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">
+                    Indirizzo e N° Civico <span class="text-rose-400">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="createAddress"
+                    name="address" 
+                    required
+                    placeholder="Es. Via Pozzobonelli 4"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">
+                    Città <span class="text-rose-400">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="createCity"
+                    name="city" 
+                    required
+                    value="Milano"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium"
+                  >
+                </div>
+              </div>
+
+              <div id="gpsStatusMessage" class="hidden text-xs font-bold text-emerald-400 bg-emerald-950/60 p-2.5 rounded-xl border border-emerald-500/30 flex items-center gap-2">
+                <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+                <span id="gpsStatusText">Coordinate GPS acquisite! Link a Google Maps generato automaticamente.</span>
+              </div>
+            </div>
+
+            <!-- Data, Orari, Quota e Livello (Perfettamente allineati su mobile e desktop) -->
+            <div class="p-4 sm:p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 shadow-inner">
+              <span class="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                <i data-lucide="calendar" class="w-4 h-4"></i> Data, Orari & Quota
+              </span>
+
+              <!-- Data Partita -->
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1.5">
+                  Data Partita <span class="text-rose-400">*</span>
+                </label>
+                <input 
+                  type="date" 
+                  name="match_date" 
+                  id="createMatchDate"
+                  required
+                  class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium h-11"
+                >
+              </div>
+
+              <!-- Orario Inizio & Orario Fine (2 colonne simmetriche) -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1.5 truncate">
+                    Orario Inizio <span class="text-rose-400">*</span>
+                  </label>
+                  <input 
+                    type="time" 
+                    name="match_time" 
+                    id="createMatchTime"
+                    value="21:00"
+                    required
+                    onchange="onStartTimeChange()"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 sm:px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium h-11"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1.5 truncate">
+                    Orario Fine <span class="text-rose-400">*</span>
+                  </label>
+                  <input 
+                    type="time" 
+                    name="end_time" 
+                    id="createEndTime"
+                    value="22:00"
+                    required
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 sm:px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium h-11"
+                  >
+                </div>
+              </div>
+
+              <!-- Quota & Orario Limite (2 colonne simmetriche) -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1.5 truncate">
+                    Quota Giocatore
+                  </label>
+                  <input 
+                    type="text" 
+                    name="price_per_player" 
+                    value="8€"
+                    placeholder="Es. 8€ o GRATIS"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 sm:px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium h-11"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1.5 truncate" title="Candidature aperte fino alle">
+                    Orario Limite SOS
+                  </label>
+                  <input 
+                    type="time" 
+                    name="deadline_time" 
+                    id="createDeadlineTime"
+                    placeholder="Es. 20:00"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 sm:px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium h-11"
+                  >
+                </div>
+              </div>
+
+              <!-- Livello Partita -->
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1.5">Livello Partita</label>
+                <select name="level" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium h-11">
+                  <option value="Amatoriale con grinta">Amatoriale con grinta (Divertimento + sana voglia di vincere)</option>
+                  <option value="Tranquillissima tra amici">Tranquillissima tra amici (Zero polemiche, birretta inclusa)</option>
+                  <option value="Competitiva / Agonisti">Competitiva / Agonisti (Ritmo alto e schemi)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">
+                Note della partita (Fratini, docce, birretta post-partita...)
+              </label>
+              <textarea 
+                name="notes" 
+                rows="2"
+                placeholder="Es. Fratini e palloni portati da noi. Terzo tempo garantito con birra al bar! Si gioca anche con pioggia leggera."
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium"
+              ></textarea>
+            </div>
+
+            <!-- Contatti Organizzatore (Mostrati chiaramente ai candidati) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">
+                  Tuo Nome (Organizzatore/Capitano) <span class="text-rose-400">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  name="organizer_name" 
+                  id="createOrganizerName"
+                  required
+                  value="Matteo Ferrari"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium"
+                >
+              </div>
+
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">
+                  Tuo Cellulare / WhatsApp <span class="text-rose-400">* (Mostrato a chi si candida)</span>
+                </label>
+                <input 
+                  type="tel" 
+                  name="organizer_phone" 
+                  id="createOrganizerPhone"
+                  required
+                  value="+39 340 1234567"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium"
+                >
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              id="createMatchSubmitBtn"
+              class="btn-shimmer w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-sm sm:text-base tracking-wider text-center flex items-center justify-center shadow-xl shadow-emerald-500/30 hover:opacity-95 transition"
+            >
+              PUBBLICA CHIAMATA & TROVA L'ULTIMO!
+            </button>
+
+          </form>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: LA MIA SCHEDA GIOCATORE (FUT CARD 3D) -->
+    <!-- ========================================== -->
+    <section id="tab-card" class="tab-pane hidden space-y-8">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800 text-center sm:text-left items-center sm:items-start">
+        <div class="flex flex-col items-center sm:items-start">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-1">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            CREATORE CARTA ULTIMATE CALCETTO
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight font-space text-white">La Tua Scheda Giocatore</h2>
+          <p class="text-xs sm:text-sm text-slate-300 font-medium max-w-xl">Trascina il dito sulla carta per muoverla in 3D! Clicca "Gira Carta" per vedere il retro.</p>
+        </div>
+
+        <div class="flex items-center justify-center gap-2 w-full sm:w-auto">
+          <button onclick="flipPlayerCard()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-100 border border-slate-700 flex items-center justify-center gap-2 transition shadow">
+            <i data-lucide="repeat" class="w-4 h-4 text-emerald-400"></i>
+            Gira Carta
+          </button>
+          <button onclick="shareMyCard()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black flex items-center justify-center gap-2 transition shadow shadow-emerald-500/25">
+            <i data-lucide="share-2" class="w-4 h-4"></i>
+            Condividi
+          </button>
+        </div>
+      </div>
+
+      <!-- Studio Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: 3D CARD SHOWCASE -->
+        <div class="lg:col-span-5 flex flex-col items-center">
+          
+          <div class="card-perspective-container w-full max-w-[340px] sm:max-w-[370px] min-h-[530px]">
+            <div id="playerCardWrapper" class="fut-card-wrapper w-full h-full">
+              <div id="playerCardFlipper" class="fut-card-flipper w-full h-full">
+                
+                <!-- FRONT OF THE CARD -->
+                <div id="cardFront" class="fut-card-front holographic-card theme-gold p-6 flex flex-col justify-between select-none relative shadow-2xl">
+                  <div class="holographic-shine" id="cardShine"></div>
+
+                  <!-- Header Rating & Avatar -->
+                  <div class="flex items-start justify-between relative z-20">
+                    <div class="flex flex-col items-center">
+                      <span id="cardOvrDisplay" class="font-bebas text-6xl font-black leading-none tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">
+                        81
+                      </span>
+                      <span id="cardRoleDisplay" class="font-bebas text-xl font-black tracking-wider text-amber-300 uppercase -mt-1 drop-shadow">
+                        CC
+                      </span>
+                      <div class="w-6 h-4 mt-2 rounded overflow-hidden shadow border border-white/50 flex">
+                        <div class="w-1/3 h-full bg-green-600"></div>
+                        <div class="w-1/3 h-full bg-white"></div>
+                        <div class="w-1/3 h-full bg-red-600"></div>
+                      </div>
+                    </div>
+
+                    <div class="relative w-40 h-40 sm:w-44 sm:h-44 -mr-2">
+                      <img 
+                        id="cardPhotoDisplay" 
+                        src="/static/avatars/bomber.svg" 
+                        alt="Avatar Giocatore" 
+                        class="w-full h-full object-cover rounded-2xl border-2 border-amber-300/60 shadow-2xl bg-slate-900"
+                      >
+                      <div class="absolute -bottom-2 -left-2 bg-slate-950 text-amber-300 border border-amber-400/50 px-2.5 py-0.5 rounded-full text-[10px] font-black shadow-lg flex items-center gap-1">
+                        <span id="cardFootDisplay">Dx</span> • <span id="cardAgeDisplay">27 anni</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Name -->
+                  <div class="text-center relative z-20 mt-3 pt-2 border-t border-amber-400/40">
+                    <h3 id="cardNameDisplay" class="font-bebas text-2xl tracking-wider text-white drop-shadow truncate">
+                      TUO NOME
+                    </h3>
+                    <p id="cardNicknameDisplay" class="text-xs font-bold text-amber-300 -mt-0.5 italic">
+                    </p>
+                  </div>
+
+                  <!-- FUT Attributes Grid -->
+                  <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 py-2 px-3 bg-black/75 backdrop-blur-md rounded-xl border border-amber-400/40 text-xs font-black relative z-20 mt-2">
+                    <div class="flex items-center justify-between">
+                      <span id="cardVelDisplay" class="font-bebas text-lg text-white">75</span>
+                      <span class="text-amber-300 text-[11px] font-black">VEL</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span id="cardDriDisplay" class="font-bebas text-lg text-white">75</span>
+                      <span class="text-amber-300 text-[11px] font-black">DRI</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span id="cardTirDisplay" class="font-bebas text-lg text-white">75</span>
+                      <span class="text-amber-300 text-[11px] font-black">TIR</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span id="cardDifDisplay" class="font-bebas text-lg text-white">75</span>
+                      <span class="text-amber-300 text-[11px] font-black">DIF</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span id="cardPasDisplay" class="font-bebas text-lg text-white">75</span>
+                      <span class="text-amber-300 text-[11px] font-black">PAS</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span id="cardFisDisplay" class="font-bebas text-lg text-white">75</span>
+                      <span class="text-amber-300 text-[11px] font-black">FIS</span>
+                    </div>
+                  </div>
+
+                  <!-- Badges Preview -->
+                  <div id="cardBadgesPreview" class="flex flex-wrap gap-1 justify-center relative z-20 mt-2">
+                    <span class="bg-black/80 text-amber-300 border border-amber-400/40 text-[10px] px-2 py-0.5 rounded-full font-bold">🍺 Terzo Tempo</span>
+                    <span class="bg-black/80 text-amber-300 border border-amber-400/40 text-[10px] px-2 py-0.5 rounded-full font-bold">⚡ Fulmine del Pagamento</span>
+                    <span class="bg-black/80 text-amber-300 border border-amber-400/40 text-[10px] px-2 py-0.5 rounded-full font-bold">🛡️ Zero Pacchi</span>
+                  </div>
+
+                  <!-- Card Footer City & Reliability -->
+                  <div class="flex items-center justify-between text-[11px] text-amber-200 font-bold relative z-20 pt-2 border-t border-amber-400/30">
+                    <span class="flex items-center gap-1 text-slate-100">
+                      <i data-lucide="map-pin" class="w-3 h-3 text-amber-400"></i>
+                      <span id="cardCityDisplay">-</span>
+                    </span>
+                    <button type="button" onclick="flipPlayerCard()" class="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-amber-300 hover:text-white bg-black/70 hover:bg-black/90 px-2 py-0.5 rounded-full border border-amber-400/50 transition shadow" title="Gira carta per vedere il retro">
+                      <i data-lucide="repeat" class="w-3 h-3 text-emerald-400"></i>
+                      <span>Gira Retro</span>
+                    </button>
+                    <span id="cardReliabilityBadgeFront" class="text-[10px] uppercase font-black tracking-wider text-emerald-400 bg-black/70 px-2 py-0.5 rounded-full border border-emerald-500/50">
+                      ⭐ 5.0 • 100% AFFIDABILE
+                    </span>
+                  </div>
+
+                </div>
+
+                <!-- BACK OF THE CARD -->
+                <div id="cardBack" class="fut-card-back theme-gold p-6 flex flex-col justify-between select-none shadow-2xl border-2 border-amber-400">
+                  
+                  <div>
+                    <div class="flex items-center justify-between pb-3 border-b border-amber-400/40">
+                      <div>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-amber-300">CURRICULUM CALCETTO</span>
+                        <h4 class="font-bebas text-xl text-white tracking-wide" id="cardBackNameDisplay">TUO NOME</h4>
+                      </div>
+                      <div class="flex flex-col items-end gap-1">
+                        <div class="flex items-center gap-1.5">
+                          <span id="cardFairPlayRatingBadge" class="px-2 py-0.5 rounded bg-black/80 border border-amber-400 text-amber-300 text-[10px] font-black" title="Affidabilità Persona">
+                            ⭐ 5.0 PERSONA
+                          </span>
+                          <span id="cardSkillAccuracyBadge" class="px-2 py-0.5 rounded bg-black/80 border border-emerald-400 text-emerald-300 text-[10px] font-black" title="Fedeltà Scheda Calcio">
+                            🎯 5.0 SCHEDA
+                          </span>
+                        </div>
+                        <button type="button" onclick="flipPlayerCard()" class="px-2 py-0.5 rounded-lg bg-black/80 hover:bg-black text-amber-300 hover:text-white border border-amber-400/60 text-[10px] font-black flex items-center gap-1 transition shadow" title="Torna al Fronte">
+                          <i data-lucide="repeat" class="w-3 h-3 text-emerald-400"></i>
+                          <span>Fronte</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Career Stats (Partite contate reali) -->
+                    <div class="grid grid-cols-3 gap-2 py-4 text-center">
+                      <div class="bg-black/75 p-2 rounded-xl border border-amber-400/30">
+                        <span id="cardMatchesPlayedDisplay" class="font-bebas text-2xl text-white leading-none">0</span>
+                        <p class="text-[10px] text-amber-300 uppercase font-black">Partite</p>
+                      </div>
+                      <div class="bg-black/75 p-2 rounded-xl border border-amber-400/30">
+                        <span id="cardMvpDisplay" class="font-bebas text-2xl text-amber-400 leading-none">0</span>
+                        <p class="text-[10px] text-amber-300 uppercase font-black">MVP</p>
+                      </div>
+                      <div class="bg-black/75 p-2 rounded-xl border border-amber-400/30">
+                        <span id="cardReliabilityPctDisplay" class="font-bebas text-2xl text-emerald-400 leading-none">100%</span>
+                        <p class="text-[10px] text-emerald-300 uppercase font-black">Affidabilità</p>
+                      </div>
+                    </div>
+
+                    <div class="bg-black/80 p-3 rounded-xl border border-amber-400/30 text-xs text-slate-100 space-y-1">
+                      <span class="text-[10px] font-black uppercase text-amber-300 block">Identikit da Spogliatoio:</span>
+                      <p id="cardBackBioDisplay" class="italic leading-relaxed text-slate-200 font-medium">
+                        "Pronto a scendere in campo e dare il massimo per la squadra!"
+                      </p>
+                    </div>
+
+                    <div class="mt-3">
+                      <span class="text-[10px] font-black uppercase text-amber-300 block mb-1.5">Targhette Sbloccate:</span>
+                      <div id="cardBackBadgesList" class="space-y-1 text-xs font-semibold"></div>
+                    </div>
+                  </div>
+
+                  <div class="pt-3 border-t border-amber-400/30 text-center">
+                    <p class="text-[10px] text-amber-200 mb-2 font-bold">Vuoi convocarlo per stasera?</p>
+                    <a id="cardWhatsAppLink" href="#" target="_blank" class="w-full py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition shadow">
+                      <i data-lucide="phone-call" class="w-3.5 h-3.5"></i>
+                      Contatta su WhatsApp
+                    </a>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Stile Themes -->
+          <div class="mt-6 flex items-center gap-2">
+            <span class="text-xs font-black uppercase text-slate-300">Stile:</span>
+            <div class="flex gap-2">
+              <button onclick="setCardTheme('gold')" class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-amber-700 border-2 border-white/80 shadow transition transform hover:scale-110" title="Oro Raro"></button>
+              <button onclick="setCardTheme('icon')" class="w-7 h-7 rounded-full bg-gradient-to-br from-slate-200 to-slate-500 border-2 border-white/80 shadow transition transform hover:scale-110" title="Icona Leggenda"></button>
+              <button onclick="setCardTheme('emerald')" class="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-800 border-2 border-white/80 shadow transition transform hover:scale-110" title="Erba Sintetica"></button>
+              <button onclick="setCardTheme('neon')" class="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400 to-blue-700 border-2 border-white/80 shadow transition transform hover:scale-110" title="Cyber Neon"></button>
+              <button onclick="setCardTheme('panini')" class="w-7 h-7 rounded-full bg-gradient-to-br from-pink-500 to-purple-800 border-2 border-white/80 shadow transition transform hover:scale-110" title="Retrò Panini"></button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: LIVE CARD EDITOR & AVATARS -->
+        <div class="lg:col-span-7 glass-panel p-6 sm:p-7 rounded-3xl border border-slate-800 space-y-6">
+          
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h4 class="text-lg font-bold font-space text-white flex items-center gap-2">
+              <i data-lucide="sliders" class="w-5 h-5 text-emerald-400"></i>
+              Personalizza la tua Scheda Giocatore
+            </h4>
+            <div id="cardSaveStatusIndicator" class="text-xs text-slate-400 font-bold flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+              <span>Scheda Ufficiale Salvata</span>
+            </div>
+          </div>
+
+          <!-- ILLUSTRATED AVATARS (Disegnati) -->
+          <div>
+            <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2 flex items-center justify-between">
+              <span>Scegli il tuo Personaggio Disegnato:</span>
+              <span class="text-amber-400 text-[11px] font-bold">8 Eroi del Calcetto</span>
+            </label>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="avatarsGrid">
+              <div onclick="selectDrawnAvatar('/static/avatars/bomber.svg')" class="avatar-option-card selected p-2 rounded-2xl bg-slate-900 border border-slate-800 cursor-pointer flex flex-col items-center text-center">
+                <img src="/static/avatars/bomber.svg" class="w-14 h-14 rounded-xl shadow">
+                <span class="text-[11px] font-bold text-white mt-1">Il Bomber</span>
+                <span class="text-[9px] text-amber-300 font-medium">Col Cerchietto</span>
+              </div>
+              <div onclick="selectDrawnAvatar('/static/avatars/portiere.svg')" class="avatar-option-card p-2 rounded-2xl bg-slate-900 border border-slate-800 cursor-pointer flex flex-col items-center text-center">
+                <img src="/static/avatars/portiere.svg" class="w-14 h-14 rounded-xl shadow">
+                <span class="text-[11px] font-bold text-white mt-1">La Saracinesca</span>
+                <span class="text-[9px] text-sky-300 font-medium">Cap alla Benji</span>
+              </div>
+              <div onclick="selectDrawnAvatar('/static/avatars/metronomo.svg')" class="avatar-option-card p-2 rounded-2xl bg-slate-900 border border-slate-800 cursor-pointer flex flex-col items-center text-center">
+                <img src="/static/avatars/metronomo.svg" class="w-14 h-14 rounded-xl shadow">
+                <span class="text-[11px] font-bold text-white mt-1">Il Metronomo</span>
+                <span class="text-[9px] text-emerald-300 font-medium">Occhialini Davids</span>
+              </div>
+              <div onclick="selectDrawnAvatar('/static/avatars/roccia.svg')" class="avatar-option-card p-2 rounded-2xl bg-slate-900 border border-slate-800 cursor-pointer flex flex-col items-center text-center">
+                <img src="/static/avatars/roccia.svg" class="w-14 h-14 rounded-xl shadow">
+                <span class="text-[11px] font-bold text-white mt-1">La Roccia</span>
+                <span class="text-[9px] text-amber-300 font-medium">Barba Vichinga</span>
+              </div>
+              <div onclick="selectDrawnAvatar('/static/avatars/ciuffo.svg')" class="avatar-option-card p-2 rounded-2xl bg-slate-900 border border-slate-800 cursor-pointer flex flex-col items-center text-center">
+                <img src="/static/avatars/ciuffo.svg" class="w-14 h-14 rounded-xl shadow">
+                <span class="text-[11px] font-bold text-white mt-1">Il Terzino '90</span>
+                <span class="text-[9px] text-pink-300 font-medium">Ciuffo & Cerotto</span>
+              </div>
+              <div onclick="selectDrawnAvatar('/static/avatars/fenomeno.svg')" class="avatar-option-card p-2 rounded-2xl bg-slate-900 border border-slate-800 cursor-pointer flex flex-col items-center text-center">
+                <img src="/static/avatars/fenomeno.svg" class="w-14 h-14 rounded-xl shadow">
+                <span class="text-[11px] font-bold text-white mt-1">Il Fenomeno</span>
+                <span class="text-[9px] text-purple-300 font-medium">Riccio Colletto</span>
+              </div>
+              <div onclick="selectDrawnAvatar('/static/avatars/senatore.svg')" class="avatar-option-card p-2 rounded-2xl bg-slate-900 border border-slate-800 cursor-pointer flex flex-col items-center text-center">
+                <img src="/static/avatars/senatore.svg" class="w-14 h-14 rounded-xl shadow">
+                <span class="text-[11px] font-bold text-white mt-1">Il Senatore</span>
+                <span class="text-[9px] text-emerald-300 font-medium">Baffi da Capitano</span>
+              </div>
+              <div onclick="selectDrawnAvatar('/static/avatars/bandana.svg')" class="avatar-option-card p-2 rounded-2xl bg-slate-900 border border-slate-800 cursor-pointer flex flex-col items-center text-center">
+                <img src="/static/avatars/bandana.svg" class="w-14 h-14 rounded-xl shadow">
+                <span class="text-[11px] font-bold text-white mt-1">Il Jolly</span>
+                <span class="text-[9px] text-orange-300 font-medium">Bandana Pirata</span>
+              </div>
+            </div>
+
+            <div class="mt-2 text-right">
+              <label class="cursor-pointer text-xs font-bold text-slate-300 hover:text-emerald-400 inline-flex items-center gap-1 transition">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                O carica un'immagine
+                <input type="file" id="photoFileInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+              </label>
+            </div>
+          </div>
+
+          <!-- Basic Data -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">Nome e Cognome</label>
+              <input type="text" id="editName" oninput="updateCardLive()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">Soprannome Calcistico</label>
+              <input type="text" id="editNickname" oninput="updateCardLive()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">Ruolo Principale</label>
+              <select id="editPrimaryRole" onchange="updateCardLive()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium focus:outline-none focus:border-emerald-500">
+                <option value="Portiere">🧤 Portiere (PT)</option>
+                <option value="Difensore">🛡️ Difensore (DC / Terzino)</option>
+                <option value="Centrocampista" selected>⚙️ Centrocampista (CC / Regista)</option>
+                <option value="Attaccante">⚡ Attaccante (ATT / Punta)</option>
+                <option value="Jolly">🃏 Jolly / Tuttocampista</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">Piede</label>
+                <select id="editFoot" onchange="updateCardLive()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium focus:outline-none focus:border-emerald-500">
+                  <option value="Destro">Destro</option>
+                  <option value="Sinistro">Sinistro</option>
+                  <option value="Ambidestro">Ambidestro</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">Età</label>
+                <input type="number" id="editAge" oninput="updateCardLive()" value="25" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium focus:outline-none focus:border-emerald-500">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">Città / Zona</label>
+              <input type="text" id="editCity" oninput="updateCardLive()" value="" placeholder="Es. Roma, Catania, Milano..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">Tuo Cellulare WhatsApp</label>
+              <input type="tel" id="editPhone" oninput="updateCardLive()" value="" placeholder="+39 3XX XXXXXXX" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+
+          <!-- Secondary Roles -->
+          <div>
+            <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2">
+              Altri Ruoli in cui puoi giocare (Multipli)
+            </label>
+            <div class="flex flex-wrap gap-2" id="secondaryRolesPicker">
+              <label class="cursor-pointer">
+                <input type="checkbox" value="Portiere Volante" class="sec-role-cb hidden peer" onchange="updateCardLive()">
+                <span class="peer-checked:bg-emerald-500 peer-checked:text-slate-950 px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 transition">Portiere Volante</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" value="Difensore Centrale" checked class="sec-role-cb hidden peer" onchange="updateCardLive()">
+                <span class="peer-checked:bg-emerald-500 peer-checked:text-slate-950 px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 transition">Difensore Centrale</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" value="Terzino di Spinta" class="sec-role-cb hidden peer" onchange="updateCardLive()">
+                <span class="peer-checked:bg-emerald-500 peer-checked:text-slate-950 px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 transition">Terzino di Spinta</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" value="Regista / Metronomo" checked class="sec-role-cb hidden peer" onchange="updateCardLive()">
+                <span class="peer-checked:bg-emerald-500 peer-checked:text-slate-950 px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 transition">Regista</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" value="Seconda Punta" class="sec-role-cb hidden peer" onchange="updateCardLive()">
+                <span class="peer-checked:bg-emerald-500 peer-checked:text-slate-950 px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 transition">Seconda Punta</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Sliders -->
+          <div class="space-y-3 pt-3 border-t border-slate-800">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black uppercase tracking-wider text-amber-400">Statistiche Tecniche & Fisiche</span>
+              <span class="text-xs font-bold text-slate-300">Overall Rating (OVR): <span id="calculatedOvrBadge" class="text-emerald-400 font-extrabold text-sm">81</span></span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div class="flex justify-between text-xs font-bold text-slate-200 mb-1">
+                  <span>VEL (Velocità / Scatto)</span>
+                  <span id="val_vel" class="text-emerald-400 font-black">84</span>
+                </div>
+                <input type="range" id="range_vel" min="40" max="99" value="84" oninput="onStatSliderChange('vel')" class="w-full accent-emerald-500">
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold text-slate-200 mb-1">
+                  <span>TIR (Tiro / Bomba da fuori)</span>
+                  <span id="val_tir" class="text-emerald-400 font-black">72</span>
+                </div>
+                <input type="range" id="range_tir" min="40" max="99" value="72" oninput="onStatSliderChange('tir')" class="w-full accent-emerald-500">
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold text-slate-200 mb-1">
+                  <span>PAS (Passaggio / Visione)</span>
+                  <span id="val_pas" class="text-emerald-400 font-black">80</span>
+                </div>
+                <input type="range" id="range_pas" min="40" max="99" value="80" oninput="onStatSliderChange('pas')" class="w-full accent-emerald-500">
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold text-slate-200 mb-1">
+                  <span>DRI (Dribbling / Controllo palla)</span>
+                  <span id="val_dri" class="text-emerald-400 font-black">77</span>
+                </div>
+                <input type="range" id="range_dri" min="40" max="99" value="77" oninput="onStatSliderChange('dri')" class="w-full accent-emerald-500">
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold text-slate-200 mb-1">
+                  <span>DIF (Interdizione / Difesa / Parate)</span>
+                  <span id="val_dif" class="text-emerald-400 font-black">79</span>
+                </div>
+                <input type="range" id="range_dif" min="40" max="99" value="79" oninput="onStatSliderChange('dif')" class="w-full accent-emerald-500">
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold text-slate-200 mb-1">
+                  <span>FIS (Fisico / Grinta / Resistenza)</span>
+                  <span id="val_fis" class="text-emerald-400 font-black">85</span>
+                </div>
+                <input type="range" id="range_fis" min="40" max="99" value="85" oninput="onStatSliderChange('fis')" class="w-full accent-emerald-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Badges -->
+          <div class="space-y-2 pt-2 border-t border-slate-800">
+            <label class="block text-xs font-black uppercase tracking-wider text-slate-200">
+              I Tuoi Badges del Calcetto
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="badgesSelectorGrid">
+              <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-slate-500">
+                <input type="checkbox" value="🍺 Terzo Tempo Garantito" checked class="badge-cb accent-emerald-500" onchange="updateCardLive()">
+                <span class="text-xs text-slate-100 font-medium">🍺 Terzo Tempo Garantito</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-slate-500">
+                <input type="checkbox" value="⚡ Fulmine del Pagamento (Quota precisa)" checked class="badge-cb accent-emerald-500" onchange="updateCardLive()">
+                <span class="text-xs text-slate-100 font-medium">⚡ Fulmine del Pagamento (Quota precisa)</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-slate-500">
+                <input type="checkbox" value="🛡️ Zero Pacchi (Mai buche all'ultimo)" checked class="badge-cb accent-emerald-500" onchange="updateCardLive()">
+                <span class="text-xs text-slate-100 font-medium">🛡️ Zero Pacchi (Mai buche all'ultimo)</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-slate-500">
+                <input type="checkbox" value="🏃 Polmoni Infiniti (Corre sempre)" checked class="badge-cb accent-emerald-500" onchange="updateCardLive()">
+                <span class="text-xs text-slate-100 font-medium">🏃 Polmoni Infiniti (Corre sempre)</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-slate-500">
+                <input type="checkbox" value="⏱️ Puntuale all'Orario (Arriva già pronto)" class="badge-cb accent-emerald-500" onchange="updateCardLive()">
+                <span class="text-xs text-slate-100 font-medium">⏱️ Puntuale all'Orario (Arriva già pronto)</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-slate-500">
+                <input type="checkbox" value="🧤 Portiere d'Emergenza" class="badge-cb accent-emerald-500" onchange="updateCardLive()">
+                <span class="text-xs text-slate-100 font-medium">🧤 Portiere d'Emergenza (Si immola in porta)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Bio -->
+          <div>
+            <label class="block text-xs font-black uppercase tracking-wider text-slate-200 mb-1">
+              Descrizione Giocatore / Bio da Spogliatoio
+            </label>
+            <textarea id="editBio" rows="2" oninput="updateCardLive()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium focus:outline-none focus:border-emerald-500"></textarea>
+          </div>
+
+          <div class="flex items-center gap-3 pt-2">
+            <button 
+              type="button" 
+              onclick="requireAuthAndExecute(() => savePlayerProfile())" 
+              class="btn-shimmer flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-sm tracking-wider text-center flex items-center justify-center shadow-lg shadow-emerald-500/25 hover:opacity-95 transition"
+            >
+              SALVA SCHEDA GIOCATORE
+            </button>
+            <button 
+              type="button" 
+              onclick="discardCardEdits()" 
+              class="px-4 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 transition flex-shrink-0"
+              title="Annulla le modifiche non salvate e torna alla scheda ufficiale"
+            >
+              <i data-lucide="rotate-ccw" class="w-4 h-4 text-slate-400"></i>
+              <span>Ripristina</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- STORICO PARTITE CONCLUSE (PER ORGANIZZATORI E GIOCATORI CONFERMATI) -->
+      <div id="userMatchHistorySection" class="glass-panel p-6 sm:p-7 rounded-3xl border border-slate-800 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider border border-amber-500/30">
+                ARCHIVIO UFFICIALE
+              </span>
+              <span id="userMatchHistoryCountBadge" class="text-xs text-slate-300 font-bold">0 Partite</span>
+            </div>
+            <h3 class="text-xl font-black font-space text-white mt-1 flex items-center gap-2">
+              <i data-lucide="history" class="w-5 h-5 text-amber-400"></i>
+              Storico Partite Concluse
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Le partite ufficialmente terminate a cui hai preso parte come organizzatore o come giocatore convocato.
+            </p>
+          </div>
+          <button type="button" onclick="loadUserMatchHistory()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-300 hover:text-white border border-slate-700 flex items-center gap-1.5 transition self-start sm:self-auto">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            Aggiorna Storico
+          </button>
+        </div>
+
+        <div id="userMatchHistoryContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <div id="userMatchHistoryEmpty" class="hidden text-center py-10 px-4 rounded-2xl bg-slate-900/50 border border-dashed border-slate-800 space-y-2">
+          <i data-lucide="calendar-x" class="w-8 h-8 text-slate-600 mx-auto"></i>
+          <p class="text-sm font-bold text-slate-300">Nessuna partita conclusa nello storico</p>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto">Appena una partita a cui partecipi o che hai organizzato raggiunge l'orario di fine, verrà salvata automaticamente qui nel tuo curriculum!</p>
+        </div>
+      </div>
+
+    </section>
+
+
+
+    <!-- ========================================== -->
+    <!-- TAB 6: 👑 PANNELLO ADMIN (SOLO AMMINISTRATORE) -->
+    <!-- ========================================== -->
+    <section id="tab-admin" class="tab-pane hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-rose-500/30">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 mb-1">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            AMMINISTRAZIONE PRIVATA
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight font-space text-white">Pannello di Controllo Admin</h2>
+          <p class="text-xs sm:text-sm text-slate-300 font-medium">Gestisci e cancella partite caricate dagli utenti, modera l'indice di affidabilità e personalizza le impostazioni globali.</p>
+        </div>
+
+        <button onclick="logout()" class="px-4 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700/60 text-xs font-black flex items-center gap-2 transition">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          Esci da Admin
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-black uppercase text-slate-400">Partite a Sistema</span>
+            <h3 id="adminTotalMatches" class="text-3xl font-black font-bebas text-white mt-1">0</h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="calendar" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-black uppercase text-slate-400">Recensioni & Affidabilità</span>
+            <h3 id="adminTotalReviews" class="text-3xl font-black font-bebas text-amber-400 mt-1">0</h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+            <i data-lucide="star" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-black uppercase text-slate-400">Utenti Registrati</span>
+            <h3 id="adminTotalUsers" class="text-3xl font-black font-bebas text-sky-400 mt-1">0</h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
+            <i data-lucide="users" class="w-6 h-6"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
+        <div class="p-4 bg-slate-950 border-b border-slate-800 flex flex-wrap gap-2">
+          <button onclick="switchAdminSubTab('matches')" id="admin-sub-matches" class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-500 text-slate-950 transition">
+            🏟️ Modera Partite Utenti
+          </button>
+          <button onclick="switchAdminSubTab('reviews')" id="admin-sub-reviews" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition">
+            ⭐ Modera Recensioni & Affidabilità
+          </button>
+          <button onclick="switchAdminSubTab('users')" id="admin-sub-users" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition">
+            👥 Utenti Registrati
+          </button>
+          <button onclick="switchAdminSubTab('settings')" id="admin-sub-settings" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition">
+            ⚙️ Impostazioni Piattaforma
+          </button>
+        </div>
+
+        <div id="adminPaneMatches" class="p-6 overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-200">
+            <thead class="text-[11px] font-black uppercase text-slate-400 border-b border-slate-800 pb-2">
+              <tr>
+                <th class="py-2">ID</th>
+                <th>Titolo & Luogo</th>
+                <th>Data / Inizio - Fine</th>
+                <th>Formato</th>
+                <th>Mancano</th>
+                <th>Organizzatore</th>
+                <th class="text-right">Azione Admin</th>
+              </tr>
+            </thead>
+            <tbody id="adminMatchesTableBody" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+
+        <div id="adminPaneReviews" class="p-6 hidden overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-200">
+            <thead class="text-[11px] font-black uppercase text-slate-400 border-b border-slate-800 pb-2">
+              <tr>
+                <th class="py-2">Recensore</th>
+                <th>Giocatore Recensito</th>
+                <th>Affidabilità Persona</th>
+                <th>Fedeltà Scheda Calcio</th>
+                <th>Tag Affidabilità</th>
+                <th>Commento</th>
+                <th class="text-right">Azione Admin</th>
+              </tr>
+            </thead>
+            <tbody id="adminReviewsTableBody" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+
+        <div id="adminPaneUsers" class="p-6 hidden overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-200">
+            <thead class="text-[11px] font-black uppercase text-slate-400 border-b border-slate-800 pb-2">
+              <tr>
+                <th class="py-2">Giocatore</th>
+                <th>Ruolo & Città</th>
+                <th>Contatti (WhatsApp / Tel / Email)</th>
+                <th>OVR Scheda</th>
+                <th>Affidabilità Persona</th>
+                <th>Fedeltà Scheda Calcio</th>
+                <th>Partite Giocate</th>
+                <th>Tipo Account</th>
+                <th class="text-right">Azione Admin</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTableBody" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+
+        <div id="adminPaneSettings" class="p-6 hidden max-w-2xl space-y-4">
+          <div>
+            <label class="block text-xs font-black uppercase text-slate-200 mb-1">
+              Messaggio Alert Broadcast in Ticker (Visibile a tutti gli utenti)
+            </label>
+            <input type="text" id="adminBroadcastInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-medium">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-200 mb-1">
+                Soglia Allerta Urgenza (Ore prima del fischio)
+              </label>
+              <input type="number" id="adminThresholdInput" value="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-medium">
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-200 mb-1">
+                Formati Campo Abilitati
+              </label>
+              <input type="text" id="adminFormatsInput" value="5,6,7" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-medium">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-black uppercase text-slate-200 mb-1">
+              Città Principali Attive (separate da virgola)
+            </label>
+            <input type="text" id="adminCitiesInput" value="Milano,Roma,Torino,Napoli,Bologna,Firenze" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-medium">
+          </div>
+
+          <button onclick="saveAdminSettings()" class="btn-shimmer px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm flex items-center gap-2 shadow-lg shadow-emerald-500/25">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            Salva Impostazioni Piattaforma
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: CENTRO CHAT E CONVERSAZIONI -->
+    <!-- ========================================== -->
+    <section id="tab-chat" class="tab-pane hidden space-y-4">
+      <div class="glass-panel w-full max-w-5xl mx-auto h-[calc(100dvh-11rem)] sm:h-[720px] rounded-2xl sm:rounded-3xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden bg-slate-950">
+        
+        <!-- Chat Top Bar -->
+        <div class="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/80 flex-shrink-0">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex-shrink-0">
+              <i data-lucide="message-square" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold font-space text-white">Centro Chat & Convocazioni</h3>
+              <p class="text-[10px] sm:text-[11px] text-slate-300">Messaggi in tempo reale con i giocatori</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unauthenticated Notice if user is not logged in -->
+        <div id="chatLoginRequiredNotice" class="hidden px-4 py-2 bg-amber-500/10 border-b border-amber-500/30 flex items-center justify-between gap-3 text-xs flex-shrink-0">
+          <div class="flex items-center gap-2 text-amber-300 font-medium text-[11px] sm:text-xs">
+            <i data-lucide="info" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+            <span>Accedi o registrati per inviare messaggi in tempo reale!</span>
+          </div>
+          <button onclick="openAuthModal('login')" class="px-3 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition flex-shrink-0">
+            Accedi
+          </button>
+        </div>
+
+        <!-- Chat Body (Sidebar + Thread) -->
+        <div class="flex-1 flex overflow-hidden">
+          
+          <!-- Conversations List (Left) -->
+          <div id="chatConversationsPanel" class="w-full sm:w-80 border-r border-slate-800/80 bg-slate-950/40 flex flex-col flex-shrink-0">
+            <div class="p-3 border-b border-slate-800/60">
+              <input 
+                type="text" 
+                id="chatSearchConversationsInput" 
+                placeholder="Cerca tra le chat..." 
+                oninput="filterChatConversationsList()" 
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500"
+              >
+            </div>
+            <div id="chatConversationsList" class="flex-1 overflow-y-auto overscroll-contain divide-y divide-slate-800/40 pb-16 sm:pb-4">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Conversation Timeline (Right) -->
+          <div id="chatThreadPanel" class="hidden sm:flex flex-1 flex-col bg-slate-900/30">
+            
+            <!-- Active Partner Top Bar -->
+            <div id="chatActiveHeader" class="px-3.5 py-2.5 sm:px-4 sm:py-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/60 flex-shrink-0">
+              <div class="flex items-center gap-2.5">
+                <button onclick="chatBackToListOnMobile()" class="sm:hidden p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white mr-0.5" aria-label="Torna alla lista">
+                  <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                </button>
+                <img id="chatPartnerAvatar" src="/static/avatars/bomber.svg" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover border border-cyan-400/50 bg-slate-900">
+                <div>
+                  <h4 id="chatPartnerName" class="text-xs sm:text-sm font-bold text-white">Seleziona una chat</h4>
+                  <p id="chatPartnerSubtitle" class="text-[10px] sm:text-[11px] text-cyan-300">Scegli una conversazione dalla lista</p>
+                </div>
+              </div>
+              <div id="chatPartnerReliabilityBadge" class="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black">
+                🛡️ 100% Affidabile
+              </div>
+            </div>
+
+            <!-- Messages Scroll View -->
+            <div id="chatMessagesScrollView" class="flex-1 p-3.5 sm:p-4 overflow-y-auto overscroll-contain space-y-3">
+              <div class="h-full flex flex-col items-center justify-center text-center text-slate-400 space-y-2">
+                <i data-lucide="messages-square" class="w-8 h-8 sm:w-10 sm:h-10 text-cyan-400/40"></i>
+                <p class="text-xs">Seleziona una chat per visualizzare tutti i messaggi scambiati</p>
+              </div>
+            </div>
+
+            <!-- Reply Bar -->
+            <div id="chatInputArea" class="p-2.5 sm:p-3 border-t border-slate-800 bg-slate-950/90 flex-shrink-0">
+              <form onsubmit="handleChatCenterSend(event)" class="flex items-center gap-2">
+                <input 
+                  type="text" 
+                  id="chatCenterInput" 
+                  placeholder="Scrivi un messaggio..." 
+                  autocomplete="off"
+                  class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-500 font-medium"
+                >
+                <button type="submit" class="px-3.5 sm:px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-1.5 shadow-lg transition flex-shrink-0">
+                  <span>Invia</span>
+                  <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                </button>
+              </form>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ATTIVA DISPONIBILITÀ (SCOUTING INSTANCE) -->
+  <!-- ========================================== -->
+  <div id="availabilityModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex flex-col justify-end sm:justify-center items-center pt-12 sm:pt-6 pb-28 sm:pb-6 px-0 sm:px-4 overscroll-contain">
+    <div class="w-full max-w-lg h-[80vh] sm:h-auto sm:max-h-[88vh] bg-slate-950 border-t-2 sm:border border-cyan-500/40 rounded-t-[2rem] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      
+      <!-- Top Sticky Header inside Sheet, clearly below status bar / notch -->
+      <div class="sticky top-0 z-20 px-5 py-3.5 border-b border-slate-800 bg-slate-950/95 backdrop-blur-md flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30 flex-shrink-0">
+            <i data-lucide="radar" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 id="availabilityModalTitle" class="text-base sm:text-lg font-black font-space text-white">Attiva Disponibilità</h3>
+            <p id="availabilityModalDesc" class="text-[11px] text-slate-300">Radar Giocatori SOS</p>
+          </div>
+        </div>
+        <button onclick="closeAvailabilityModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center border border-slate-700 active:scale-95 transition flex-shrink-0 shadow" aria-label="Chiudi Scheda">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Scrollable form body -->
+      <div class="flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6 space-y-4 pb-28 sm:pb-6">
+        <form onsubmit="handleCreateAvailability(event)" class="space-y-4">
+          <input type="hidden" id="availEditId" value="">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-200 mb-1">Data in cui sei Libero</label>
+              <input type="date" id="availDate" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium h-11">
+            </div>
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-200 mb-1">Fascia Oraria</label>
+              <input type="text" id="availTimeSlot" value="Dalle 20:30 in poi" required placeholder="Es. 20:00 - 23:00" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium h-11">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-200 mb-1">Città</label>
+              <input type="text" id="availCity" value="Milano" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium h-11">
+            </div>
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-200 mb-1">Zona / Quartiere</label>
+              <input type="text" id="availZone" value="Milano Nord / Bicocca" required placeholder="Es. San Siro, Navigli, Bicocca" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium h-11">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-200 mb-1">Ruolo in cui Giochi</label>
+              <select id="availRole" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium h-11">
+                <option value="Portiere">🧤 Portiere</option>
+                <option value="Difensore">🛡️ Difensore</option>
+                <option value="Centrocampista" selected>⚙️ Centrocampista</option>
+                <option value="Attaccante">⚡ Attaccante</option>
+                <option value="Jolly">🃏 Jolly / Qualsiasi</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-200 mb-1">Formato Preferito</label>
+              <select id="availFormat" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium h-11">
+                <option value="Calcio a 5, 6 o 7">⚽ 5, 6 o 7 (Tutti i formati)</option>
+                <option value="Solo Calcio a 5">Solo Calcio a 5</option>
+                <option value="Solo Calcio a 6">Solo Calcio a 6</option>
+                <option value="Solo Calcio a 7">Solo Calcio a 7</option>
+                <option value="Solo Calcio a 5 e 6">Solo Calcio a 5 e 6</option>
+                <option value="Solo Calcio a 5 e 7">Solo Calcio a 5 e 7</option>
+                <option value="Solo Calcio a 6 e 7">Solo Calcio a 6 e 7</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-black uppercase text-slate-200 mb-1">Note per chi ti convoca</label>
+            <textarea id="availNotes" rows="2" placeholder="Es. Munito di scarpini sintetico, arrivo con 15 min di anticipo, no problem per il terzo tempo!" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium"></textarea>
+          </div>
+
+          <button type="submit" id="availabilityModalSubmitBtn" class="btn-shimmer w-full py-3.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm tracking-wide shadow-lg shadow-cyan-500/25 transition">
+            PUBBLICA DISPONIBILITÀ SUL RADAR
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: IN-APP SCOUTING MESSAGING CHAT -->
+  <!-- ========================================== -->
+  <div id="scoutMessageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg rounded-3xl border border-cyan-500/40 p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <img id="scoutChatRecipientAvatar" src="/static/avatars/portiere.svg" class="w-10 h-10 rounded-xl border border-cyan-400 shadow">
+          <div>
+            <h4 class="font-bold text-white text-sm" id="scoutChatRecipientName">Gianluigi Riva</h4>
+            <span class="text-[10px] text-cyan-300 font-bold" id="scoutChatRecipientInfo">Portiere • Disponibile Stasera</span>
+          </div>
+        </div>
+        <button onclick="closeScoutMessageModal()" class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Messages Thread -->
+      <div id="scoutChatThread" class="flex-grow overflow-y-auto py-4 space-y-3 min-h-[220px] max-h-[320px]"></div>
+
+      <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-300 font-medium mb-3">
+        💡 Scambiatevi i dettagli della partita e decidete qui se passarvi i numeri WhatsApp!
+      </div>
+
+      <!-- Chat Input Form -->
+      <form onsubmit="handleSendScoutMessage(event)" class="flex gap-2">
+        <input 
+          type="text" 
+          id="scoutChatMessageInput" 
+          required 
+          placeholder="Scrivi un messaggio al giocatore..." 
+          class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 font-medium"
+        >
+        <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm flex items-center gap-1.5 shadow transition">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          Invia
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: LOGIN & REGISTRAZIONE PULITA -->
+  <!-- ========================================== -->
+  <div id="authModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-md rounded-3xl border border-slate-700 p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
+          <i data-lucide="user-check" class="w-6 h-6"></i>
+        </div>
+        <h3 id="authModalTitle" class="text-2xl font-black font-space text-white">Accedi a Trova l'Ultimo</h3>
+        <p class="text-xs text-slate-300 mt-1">Accedi al tuo profilo giocatore per scendere in campo!</p>
+      </div>
+
+      <!-- Clean Auth Form -->
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        
+        <div id="registerFields" class="hidden space-y-3">
+          <div>
+            <label class="block text-xs font-black uppercase text-slate-200 mb-1">Nome e Cognome <span class="text-rose-400">*</span></label>
+            <input type="text" id="authFullName" placeholder="Es. Marco Rossi" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium">
+          </div>
+          <div>
+            <label class="block text-xs font-black uppercase text-slate-200 mb-1">Cellulare WhatsApp <span class="text-rose-400">*</span></label>
+            <input type="tel" id="authPhone" placeholder="+39 347 1234567" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium">
+          </div>
+          <div>
+            <label class="block text-xs font-black uppercase text-slate-200 mb-1">Email <span class="text-rose-400">*</span></label>
+            <input type="email" id="authEmail" placeholder="marco@example.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black uppercase text-slate-200 mb-1">Username o Email</label>
+          <input type="text" id="authUsername" required placeholder="Il tuo username" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium">
+        </div>
+
+        <div>
+          <label class="block text-xs font-black uppercase text-slate-200 mb-1">Password</label>
+          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-medium">
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="btn-shimmer w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm tracking-wide shadow-lg shadow-emerald-500/25 transition">
+          ACCEDI ORA
+        </button>
+
+      </form>
+
+      <div class="mt-4 pt-3 border-t border-slate-800 text-center">
+        <button type="button" onclick="toggleAuthMode()" id="authToggleModeBtn" class="text-xs font-bold text-slate-300 hover:text-emerald-400 transition">
+          Non hai ancora un account? Registrati qui
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: POST-MATCH FEEDBACK (DOPPIA VALUTAZIONE) -->
+  <!-- ========================================== -->
+  <div id="feedbackModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex flex-col justify-end sm:justify-center items-center pt-12 sm:pt-6 pb-28 sm:pb-6 px-0 sm:px-4 overscroll-contain">
+    <div class="w-full max-w-lg h-[80vh] sm:h-auto sm:max-h-[88vh] bg-slate-950 border-t-2 sm:border border-amber-500/50 rounded-t-[2rem] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      
+      <!-- Top Sticky Header inside Sheet, clearly below status bar / notch -->
+      <div class="sticky top-0 z-20 px-5 py-3.5 border-b border-slate-800 bg-slate-950/95 backdrop-blur-md flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/40 flex-shrink-0 shadow">
+            <i data-lucide="award" class="w-5 h-5 text-amber-400"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-black font-space text-white leading-tight">Valuta Giocatore</h3>
+            <p class="text-[11px] text-slate-300">Feedback affidabilità & scheda</p>
+          </div>
+        </div>
+        <button onclick="closeFeedbackModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center border border-slate-700 active:scale-95 transition flex-shrink-0 shadow" aria-label="Chiudi Scheda">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Scrollable content body -->
+      <div class="flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6 space-y-4 pb-28 sm:pb-6">
+        <p class="text-xs text-slate-300 -mt-1">La partita è terminata! Vota il compagno su persona e scheda per garantire una community affidabile.</p>
+
+      <!-- Match & Player Info Banner -->
+      <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-xl overflow-hidden flex-shrink-0">
+            <span id="reviewTargetAvatar">⚽</span>
+          </div>
+          <div>
+            <h4 id="reviewTargetPlayerNameDisplay" class="font-bold text-white text-sm">Giocatore</h4>
+            <p id="reviewMatchContextDisplay" class="text-[11px] text-amber-400 font-medium">Partita conclusa</p>
+          </div>
+        </div>
+        <span id="reviewTargetRoleDisplay" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-black border border-emerald-500/30">
+          CC • 80 OVR
+        </span>
+      </div>
+
+      <form onsubmit="handleReviewSubmit(event)" class="space-y-4">
+        <input type="hidden" id="reviewMatchId" value="">
+        <input type="hidden" id="reviewMatchTitle" value="">
+        <input type="hidden" id="reviewTargetPlayerId" value="">
+        <input type="hidden" id="reviewTargetPlayerName" value="">
+
+        <!-- CRITERIO 1: AFFIDABILITÀ PERSONA -->
+        <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-amber-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-black uppercase text-amber-300 flex items-center gap-1.5">
+              <span>⭐ 1. Affidabilità Persona</span>
+            </label>
+            <span id="personRatingDesc" class="text-[11px] font-black text-amber-400">5/5 • Puntuale & Paga Subito</span>
+          </div>
+          <p class="text-[11px] text-slate-400">È arrivato puntuale? Ha pagato subito la sua quota campo? È stato corretto nello spogliatoio e ha evitato pacchi?</p>
+          <div class="flex items-center justify-center gap-2 pt-1" id="personStarContainer">
+            <button type="button" onclick="setReviewPersonRating(1)" class="person-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-amber-400 text-amber-400"></i></button>
+            <button type="button" onclick="setReviewPersonRating(2)" class="person-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-amber-400 text-amber-400"></i></button>
+            <button type="button" onclick="setReviewPersonRating(3)" class="person-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-amber-400 text-amber-400"></i></button>
+            <button type="button" onclick="setReviewPersonRating(4)" class="person-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-amber-400 text-amber-400"></i></button>
+            <button type="button" onclick="setReviewPersonRating(5)" class="person-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-amber-400 text-amber-400"></i></button>
+            <input type="hidden" id="selectedPersonRating" value="5">
+          </div>
+        </div>
+
+        <!-- CRITERIO 2: FEDELTÀ SCHEDA CALCIO -->
+        <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-emerald-500/30 space-y-2">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <label class="text-xs font-black uppercase text-emerald-400 flex items-center gap-1.5">
+              <span>🎯 2. Fedeltà Scheda Calcio</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="toggleReviewPlayerCardPreview()" id="togglePlayerCardPreviewBtn" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 text-[11px] font-black flex items-center gap-1.5 transition">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span id="playerCardPreviewBtnText">🔍 Rivedi Scheda del Giocatore</span>
+              </button>
+              <span id="skillRatingDesc" class="text-[11px] font-black text-emerald-400">5/5 • 100% Fedele alla Scheda</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400">Le abilità dichiarate nella scheda 3D (velocità, ruolo, tiro, difesa) rispecchiano la realtà in campo? O ha gonfiato la scheda dicendo frottole?</p>
+          
+          <div class="flex items-center justify-center gap-2 pt-1" id="skillStarContainer">
+            <button type="button" onclick="setReviewSkillRating(1)" class="skill-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-emerald-400 text-emerald-400"></i></button>
+            <button type="button" onclick="setReviewSkillRating(2)" class="skill-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-emerald-400 text-emerald-400"></i></button>
+            <button type="button" onclick="setReviewSkillRating(3)" class="skill-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-emerald-400 text-emerald-400"></i></button>
+            <button type="button" onclick="setReviewSkillRating(4)" class="skill-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-emerald-400 text-emerald-400"></i></button>
+            <button type="button" onclick="setReviewSkillRating(5)" class="skill-star-btn active text-2xl"><i data-lucide="star" class="w-7 h-7 fill-emerald-400 text-emerald-400"></i></button>
+            <input type="hidden" id="selectedSkillRating" value="5">
+          </div>
+
+          <!-- SCHEDA GIOCATORE PREVIEW DRAWER (PER CONFRONTO DIRETTO) -->
+          <div id="reviewPlayerCardPreviewBox" class="hidden mt-3 p-3.5 rounded-2xl bg-slate-950 border border-cyan-500/50 space-y-3 transition-all duration-300 shadow-xl">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div class="flex items-center gap-2.5">
+                <img id="previewCardAvatar" src="/static/avatars/bomber.svg" class="w-9 h-9 rounded-xl object-contain bg-slate-900 border border-cyan-500/40 p-0.5" alt="">
+                <div>
+                  <h5 id="previewCardName" class="text-xs font-black text-white uppercase font-space">NOME GIOCATORE</h5>
+                  <p id="previewCardSub" class="text-[10px] text-cyan-300 font-bold">Attaccante • Destro • 25 anni</p>
+                </div>
+              </div>
+              <span id="previewCardOvr" class="px-2.5 py-0.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs font-bebas tracking-wider">
+                83 OVR
+              </span>
+            </div>
+
+            <!-- Stats 6-grid -->
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+              <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                <span class="text-[9px] font-black text-slate-400 block uppercase">VEL</span>
+                <span id="previewStat_vel" class="text-xs font-black text-emerald-400">84</span>
+              </div>
+              <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                <span class="text-[9px] font-black text-slate-400 block uppercase">TIR</span>
+                <span id="previewStat_tir" class="text-xs font-black text-emerald-400">72</span>
+              </div>
+              <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                <span class="text-[9px] font-black text-slate-400 block uppercase">PAS</span>
+                <span id="previewStat_pas" class="text-xs font-black text-emerald-400">80</span>
+              </div>
+              <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                <span class="text-[9px] font-black text-slate-400 block uppercase">DRI</span>
+                <span id="previewStat_dri" class="text-xs font-black text-emerald-400">77</span>
+              </div>
+              <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                <span class="text-[9px] font-black text-slate-400 block uppercase">DIF</span>
+                <span id="previewStat_dif" class="text-xs font-black text-emerald-400">79</span>
+              </div>
+              <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                <span class="text-[9px] font-black text-slate-400 block uppercase">FIS</span>
+                <span id="previewStat_fis" class="text-xs font-black text-emerald-400">85</span>
+              </div>
+            </div>
+
+            <!-- Bio & Badges preview -->
+            <div class="text-[11px] text-slate-300 italic bg-slate-900/60 p-2 rounded-xl border border-slate-800">
+              <span class="font-bold text-slate-400 not-italic block text-[9px] uppercase">Bio del compagno:</span>
+              <span id="previewCardBio">"Pronto a dare il massimo sul campo!"</span>
+            </div>
+          </div>
+
+          <!-- SPECIFICHE DISCREPANZA (OBBLIGATORIO SE <= 2 STELLE) -->
+          <div id="skillDiscrepancySection" class="hidden mt-3 p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/60 space-y-3">
+            <div class="flex items-center gap-2 text-rose-300">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 flex-shrink-0 animate-bounce"></i>
+              <div>
+                <h5 class="text-xs font-black uppercase text-rose-300">Specifica Discrepanza (Obbligatorio per 1 o 2 stelle)</h5>
+                <p class="text-[10px] text-slate-300">L'app invierà un consiglio costruttivo all'utente per invitarlo ad aggiornare la propria scheda.</p>
+              </div>
+            </div>
+
+            <!-- Radio: Vale di meno vs Vale di più -->
+            <div class="space-y-1.5 pt-1">
+              <label class="block text-[11px] font-bold text-slate-200">Come valuti le sue caratteristiche rispetto alla scheda?</label>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-rose-400">
+                  <input type="radio" name="discrepancyType" value="overrated" checked class="accent-rose-500">
+                  <span class="text-xs text-rose-300 font-bold">Vale di MENO 🧢<br><span class="text-[9px] text-slate-400 font-normal">Ha gonfiato le statistiche</span></span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-emerald-400">
+                  <input type="radio" name="discrepancyType" value="underrated" class="accent-emerald-500">
+                  <span class="text-xs text-emerald-300 font-bold">Vale di PIÙ ⚡<br><span class="text-[9px] text-slate-400 font-normal">Si è sottovalutato, è più forte</span></span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-amber-400">
+                  <input type="radio" name="discrepancyType" value="role_mismatch" class="accent-amber-500">
+                  <span class="text-xs text-amber-300 font-bold">Ruolo Errato 🔄<br><span class="text-[9px] text-slate-400 font-normal">Gioca in altra posizione</span></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Attributi da rivedere -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-200 mb-1">Quali caratteristiche deve ricalibrare?</label>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="discrepancyAttributesGrid">
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                  <input type="checkbox" value="Velocità (VEL)" class="discrepancy-attr-cb accent-rose-500">
+                  <span>Velocità</span>
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                  <input type="checkbox" value="Tiro (TIR)" class="discrepancy-attr-cb accent-rose-500">
+                  <span>Tiro</span>
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                  <input type="checkbox" value="Passaggio (PAS)" class="discrepancy-attr-cb accent-rose-500">
+                  <span>Passaggio</span>
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                  <input type="checkbox" value="Dribbling (DRI)" class="discrepancy-attr-cb accent-rose-500">
+                  <span>Dribbling</span>
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                  <input type="checkbox" value="Difesa (DIF)" class="discrepancy-attr-cb accent-rose-500">
+                  <span>Difesa</span>
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                  <input type="checkbox" value="Fisico/Resistenza (FIS)" class="discrepancy-attr-cb accent-rose-500">
+                  <span>Fisico/Fiato</span>
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 p-1.5 rounded-lg border border-slate-800 col-span-2">
+                  <input type="checkbox" value="Ruolo in campo" class="discrepancy-attr-cb accent-rose-500">
+                  <span>Ruolo effettivo in campo</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Dettaglio obbligatorio per spiegare -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-200 mb-1">
+                Spiega bene il motivo <span class="text-rose-400">*</span>
+                <span class="text-[10px] text-slate-400 font-normal">(verrà notificato al giocatore per aiutarlo a correggere la scheda)</span>
+              </label>
+              <textarea id="reviewDiscrepancyDetails" rows="2" placeholder="Es. Ha impostato 88 di velocità e 80 di tiro ma non rientra mai e non tiene il ritmo partita, oppure si è dato 60 di tiro ma ha segnato 4 gol bellissimi..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 font-medium"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black uppercase text-slate-200 mb-1">Targhetta Caratteristica</label>
+          <select id="reviewReliabilityTag" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium">
+            <option value="🎯 100% Fedele alla Scheda">🎯 100% Fedele alla Scheda (Gioca esattamente come descritto)</option>
+            <option value="⏱️ Sempre Puntuale">⏱️ Sempre Puntuale (Arrivato 15 min prima per riscaldarsi)</option>
+            <option value="⚡ Fulmine del Pagamento">⚡ Fulmine del Pagamento (Quota precisa immediata)</option>
+            <option value="🛡️ Zero Pacchi">🛡️ Zero Pacchi (Massima serietà e presenza garantita)</option>
+            <option value="🤝 Corretto & Leale">🤝 Corretto & Leale (Fair Play impeccabile)</option>
+            <option value="🍺 Campione del Terzo Tempo">🍺 Campione del Terzo Tempo (Spirito di squadra top)</option>
+            <option value="🧢 Scheda Gonfiata">🧢 Scheda Gonfiata (Non corre quanto diceva o ruolo errato)</option>
+            <option value="⚠️ Ritardatario cronico">⚠️ Ritardatario cronico (Arrivato a partita iniziata)</option>
+            <option value="⚠️ Ha dato buca all'ultimo">⚠️ Ha dato buca all'ultimo (Pacco - Penalità Severa)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black uppercase text-slate-200 mb-1">Commento da Spogliatoio</label>
+          <textarea id="reviewComment" rows="2" placeholder="Es. Puntualissimo, paga subito e in campo corre esattamente come ha scritto nella scheda 3D!" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium"></textarea>
+        </div>
+
+        <button type="submit" class="btn-shimmer w-full py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm tracking-wide shadow-lg shadow-amber-400/25 transition">
+          INVIA FEEDBACK VERIFICATO ⭐
+        </button>
+
+      </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: INTERACTIVE TACTICAL PITCH VIEW -->
+  <!-- ========================================== -->
+  <div id="pitchModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex flex-col justify-end sm:justify-center items-center pt-12 sm:pt-6 pb-28 sm:pb-6 px-0 sm:px-4 overscroll-contain">
+    <div class="w-full max-w-3xl h-[80vh] sm:h-auto sm:max-h-[88vh] bg-slate-950 border-t-2 sm:border border-emerald-500/50 rounded-t-[2rem] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      
+      <!-- Top Sticky Header inside Sheet, clearly below status bar / notch -->
+      <div class="sticky top-0 z-20 px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-800 bg-slate-950/95 backdrop-blur-md flex items-center justify-between flex-shrink-0">
+        <div class="min-w-0 pr-2">
+          <div class="flex items-center gap-2 flex-wrap mb-0.5">
+            <span id="pitchModalFormatBadge" class="bg-emerald-500/20 text-emerald-300 text-[11px] font-black px-2 py-0.5 rounded-lg border border-emerald-500/40">CALCIO A 5</span>
+            <span id="pitchModalStatusBadge" class="bg-amber-400/20 text-amber-300 text-[11px] font-black px-2 py-0.5 rounded-lg border border-amber-400/30">1 POSTO MANCANTE</span>
+          </div>
+          <h3 id="pitchModalTitle" class="text-base sm:text-lg font-black text-white font-space leading-tight truncate">Campetto Tattico</h3>
+          <p id="pitchModalSubtitle" class="text-[11px] sm:text-xs text-slate-300 font-medium truncate">Centro Sportivo • Orario Partita</p>
+        </div>
+        <button onclick="closePitchModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center border border-slate-700 active:scale-95 transition flex-shrink-0 shadow" aria-label="Chiudi Campetto">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Scrollable Pitch Content (Single clean scroll container) -->
+      <div class="flex-1 overflow-y-auto overscroll-contain p-3.5 sm:p-5 flex flex-col items-center space-y-3 pb-8">
+        
+        <!-- Organizer Direct Contact Bar inside Pitch Modal -->
+        <div id="pitchModalOrganizerBox" class="w-full max-w-2xl px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
+          <span class="text-slate-300">Organizzatore: <strong id="pitchModalOrganizerName" class="text-white">Matteo Ferrari</strong></span>
+          <div id="pitchModalOrganizerPhoneContainer"></div>
+        </div>
+
+        <!-- Deadline & Status Banner -->
+        <div id="pitchModalDeadlineBanner" class="w-full max-w-2xl px-3.5 py-2 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-amber-300 flex items-center justify-between text-xs font-bold shadow-inner">
+          <div class="flex items-center gap-2">
+            <i data-lucide="hourglass" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+            <span id="pitchModalDeadlineText">Tempo massimo per candidarsi: Entro le ore 20:00</span>
+          </div>
+          <span id="pitchModalDeadlineTag" class="text-[10px] px-2 py-0.5 rounded bg-black/40 text-amber-300 font-mono flex-shrink-0">ORARIO LIMITE</span>
+        </div>
+
+        <p id="pitchModalInstructionText" class="text-xs text-emerald-300 font-black flex items-center gap-1.5 animate-pulse text-center">
+          <i data-lucide="mouse-pointer-click" class="w-4 h-4 flex-shrink-0"></i>
+          Clicca sullo slot rosso lampeggiante con il "+" per candidarti in quella posizione!
+        </p>
+
+        <!-- Tactical Pitch Container -->
+        <div id="tacticalPitchBoard" class="pitch-board w-full max-w-2xl h-[340px] sm:h-[430px] relative flex flex-col justify-between p-4 rounded-3xl overflow-hidden shadow-2xl flex-shrink-0 transition-all duration-300">
+          <div class="pitch-stripes"></div>
+          
+          <!-- Tactical Pitch Lines Container (Rendered dynamically for Single vs Double Pitch) -->
+          <div id="pitchLinesLayer" class="absolute inset-0 pointer-events-none"></div>
+
+          <!-- Players Tactical Layer -->
+          <div id="pitchPlayersLayer" class="relative z-10 w-full h-full"></div>
+        </div>
+
+        <!-- Legend -->
+        <div id="pitchModalLegend" class="mt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[11px] sm:text-xs font-bold text-center">
+          <div class="flex items-center gap-1.5">
+            <div class="w-3.5 h-3.5 rounded-full bg-slate-900 border-2 border-emerald-400 flex items-center justify-center text-[7px] text-white">✓</div>
+            <span class="text-slate-300">Confermato</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-3.5 h-3.5 rounded-full bg-rose-600 animate-ping flex items-center justify-center text-[8px] text-white font-black">+</div>
+            <span class="text-rose-400 font-black">Slot Mancante (Clicca "+")</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-3.5 h-3.5 rounded-full bg-amber-500 flex items-center justify-center text-[8px] text-slate-950 font-black">⏳</div>
+            <span class="text-amber-300 font-black">Tua Candidatura</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Sticky Action Bar inside Sheet (Always fully visible above bottom nav bar!) -->
+      <div class="sticky bottom-0 z-20 px-4 py-3.5 sm:px-5 sm:py-4 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md flex flex-row items-center justify-between gap-3 flex-shrink-0 shadow-[0_-10px_25px_rgba(0,0,0,0.8)]">
+        <div class="min-w-0 pr-2">
+          <span id="pitchModalPrice" class="text-sm sm:text-base font-black text-amber-300 block leading-tight">8€ a persona</span>
+          <span id="pitchModalFooterStatus" class="text-[10px] sm:text-xs text-slate-400 block truncate">Posto disponibile!</span>
+        </div>
+        <button id="pitchModalApplyBtn" onclick="triggerApplyFromModal()" class="btn-shimmer px-5 py-3 sm:px-6 sm:py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/25 active:scale-95 transition flex-shrink-0">
+          <i data-lucide="hand" class="w-4 h-4"></i>
+          <span id="pitchModalApplyBtnText">Mi Candido come Ultimo!</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: APPLICATION SUCCESS & DIRECT WHATSAPP -->
+  <!-- ========================================== -->
+  <div id="applySuccessModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-md rounded-3xl border border-emerald-500/40 p-6 text-center shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      
+      <div class="w-16 h-16 rounded-3xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto mb-4 animate-bounce">
+        <i data-lucide="check-check" class="w-8 h-8"></i>
+      </div>
+
+      <h3 class="text-2xl font-black font-space text-white">CANDIDATURA INVIATA! 🎯</h3>
+      <p id="applySuccessMessage" class="text-sm text-slate-200 mt-2 font-medium">
+        La tua candidatura è stata registrata! Contatta subito l'organizzatore su WhatsApp per presentarti: potrà confermarti ufficialmente in squadra dall'app.
+      </p>
+      <div class="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-300 font-semibold text-left">
+        💡 <strong>Info utile:</strong> Puoi candidarti liberamente anche ad altre partite! Non appena vieni confermato in una, le altre candidature pendenti verranno chiuse in automatico.
+      </div>
+
+      <!-- Organizer Verified Phone Display -->
+      <div class="my-4 p-3 rounded-2xl bg-slate-950 border border-emerald-500/30 text-left">
+        <span class="text-[10px] font-black uppercase text-emerald-400 block">Contatto Diretto Creatore Partita:</span>
+        <div class="flex items-center justify-between mt-1">
+          <div>
+            <h5 id="applyOrganizerName" class="font-bold text-white text-sm">Matteo Ferrari</h5>
+            <a id="applyOrganizerPhoneLink" href="#" target="_blank" class="text-xs font-mono font-bold text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1.5 cursor-pointer mt-0.5" title="Scrivi su WhatsApp all'organizzatore">
+              <span id="applyOrganizerPhone">+39 340 1234567</span>
+              <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+            </a>
+          </div>
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded border border-emerald-500/40">VERIFICATO</span>
+        </div>
+      </div>
+
+      <div class="mt-5 space-y-2.5">
+        <a id="applyWhatsAppBtn" href="#" target="_blank" class="w-full py-3 rounded-2xl bg-green-500 hover:bg-green-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-green-500/30 transition">
+          <i data-lucide="message-square" class="w-5 h-5"></i>
+          Scrivi all'Organizzatore su WhatsApp
+        </a>
+        <button onclick="closeApplyModal()" class="w-full py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">
+          Chiudi e Torna alle Partite
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: GESTIONE CANDIDATI PARTITA (CREATORE) -->
+  <!-- ========================================== -->
+  <div id="matchApplicationsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-2xl rounded-3xl border border-slate-700 p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <i data-lucide="users" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold font-space text-white">Candidature Ricevute</h3>
+            <p id="applicationsModalSubtitle" class="text-xs text-slate-300">Gestisci i giocatori che si sono proposti per la tua partita</p>
+          </div>
+        </div>
+        <button onclick="closeMatchApplicationsModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="applicationsModalHeaderInfo" class="mt-4 p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
+        <span class="text-slate-300 font-bold" id="appModalMatchTitle">Partita</span>
+        <span class="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-black border border-emerald-500/40" id="appModalSlotsStatus">Posti mancanti: 1</span>
+      </div>
+
+      <!-- Applicants List -->
+      <div id="matchApplicationsList" class="my-4 overflow-y-auto space-y-3 flex-1 pr-1">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 flex justify-end">
+        <button onclick="closeMatchApplicationsModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">
+          Chiudi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS MODAL / DRAWER -->
+  <div id="notificationsModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex flex-col justify-end sm:justify-center items-center pt-12 sm:pt-6 pb-28 sm:pb-6 px-0 sm:px-4 overscroll-contain">
+    <div class="w-full max-w-lg h-[80vh] sm:h-auto sm:max-h-[85vh] bg-slate-950 border-t-2 sm:border border-amber-400/50 rounded-t-[2rem] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      
+      <!-- Sticky Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/95 flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-400/10 text-amber-400 border border-amber-400/30 flex items-center justify-center shadow">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-black font-space text-white">Notifiche Account</h3>
+            <p class="text-xs text-slate-300">Candidature, messaggi chat e convocazioni</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="markAllNotificationsRead()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-[11px] font-bold text-amber-300 border border-amber-500/30 transition active:scale-95" title="Segna tutte come lette">
+            Tutte Lette
+          </button>
+          <button onclick="closeNotificationsModal()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Browser Push Permission Banner -->
+      <div id="browserNotificationPromptBanner" class="p-3.5 bg-gradient-to-r from-amber-950/50 via-slate-900 to-amber-950/50 border-b border-amber-500/30 flex items-center justify-between gap-3 text-xs flex-shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-base">📲</span>
+          <p class="text-slate-200 text-[11px] font-medium leading-tight">Attiva le notifiche sul telefono per avvisi istantanei!</p>
+        </div>
+        <button onclick="requestNotificationPermission()" id="enableNotificationsBtn" class="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-md transition active:scale-95 whitespace-nowrap">
+          Attiva
+        </button>
+      </div>
+
+      <!-- Notifications List (Scrollable) -->
+      <div id="notificationsListContainer" class="flex-1 overflow-y-auto p-4 space-y-2.5 divide-y divide-slate-800/40">
+        <!-- Injected via renderNotificationsList() -->
+      </div>
+
+      <!-- Footer -->
+      <div class="p-3 border-t border-slate-800/80 bg-slate-950/90 flex items-center justify-between text-xs text-slate-400 flex-shrink-0">
+        <span id="notificationsFooterCount">0 notifiche</span>
+        <button onclick="closeNotificationsModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
+          Chiudi
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 font-semibold">
+      <div class="flex items-center gap-2">
+        <span class="font-space font-bold text-white">TROVA L'ULTIMO</span>
+        <span>•</span>
+        <span>Mai più con uno in meno</span>
+      </div>
+      <div>
+        Creato per gli amanti del calcetto a 5, 6 e 7 ⚽🇮🇹
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- NATIVE MOBILE BOTTOM NAVIGATION BAR -->
+  <!-- ========================================== -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-[70] bg-slate-950/95 backdrop-blur-xl border-t border-slate-800 shadow-[0_-8px_30px_rgba(0,0,0,0.8)] px-2 pt-1 pb-safe">
+    <div class="flex items-center justify-around h-16 max-w-lg mx-auto">
+      
+      <!-- Tab 1: Partite SOS -->
+      <button onclick="switchTab('feed')" id="mob-nav-feed" class="mob-nav-btn flex flex-col items-center justify-center flex-1 py-1 text-emerald-400 font-bold transition-all">
+        <i data-lucide="flame" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] tracking-tight">Partite</span>
+      </button>
+
+      <!-- Tab 2: Scouting Radar -->
+      <button onclick="switchTab('scouting')" id="mob-nav-scouting" class="mob-nav-btn flex flex-col items-center justify-center flex-1 py-1 text-slate-400 font-medium hover:text-cyan-400 transition-all">
+        <i data-lucide="radar" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] tracking-tight">Radar</span>
+      </button>
+
+      <!-- Center Action: Crea Partita (Floating Emerald Button) -->
+      <button onclick="requireAuthAndExecute(() => switchTab('create'))" id="mob-nav-create" class="flex flex-col items-center justify-center -mt-6 mx-1 group" title="Crea o Carica una Partita">
+        <div class="w-13 h-13 p-3 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.55)] border-4 border-slate-950 group-active:scale-95 transition-all">
+          <i data-lucide="plus" class="w-6 h-6 stroke-[3]"></i>
+        </div>
+        <span class="text-[10px] font-black text-emerald-400 mt-0.5 tracking-tight">Crea</span>
+      </button>
+
+      <!-- Tab 3: Chat Center (Native Tab) -->
+      <button onclick="switchTab('chat')" id="mob-nav-chat" class="mob-nav-btn relative flex flex-col items-center justify-center flex-1 py-1 text-slate-400 font-medium hover:text-emerald-400 transition-all">
+        <div class="relative">
+          <i data-lucide="message-circle" class="w-5 h-5 mb-0.5"></i>
+          <span id="mobChatBadgeDot" class="hidden absolute -top-1 -right-1.5 w-2.5 h-2.5 bg-cyan-400 border-2 border-slate-950 rounded-full animate-ping"></span>
+        </div>
+        <span class="text-[10px] tracking-tight">Chat</span>
+      </button>
+
+      <!-- Tab 4: Scheda Giocatore -->
+      <button onclick="switchTab('card')" id="mob-nav-card" class="mob-nav-btn flex flex-col items-center justify-center flex-1 py-1 text-slate-400 font-medium hover:text-amber-400 transition-all">
+        <i data-lucide="credit-card" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] tracking-tight">Scheda</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

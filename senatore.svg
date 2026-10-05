@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg_senatore" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="30" fill="url(#bg_senatore)"/>
+  
+  <!-- Classic Retro Italian Tricolore Jersey -->
+  <path d="M40 200 Q40 148 100 148 Q160 148 160 200 Z" fill="#1d4ed8"/>
+  <rect x="90" y="148" width="20" height="52" fill="#ffffff"/>
+  
+  <!-- Yellow Captain Armband (Fascia Capitano) -->
+  <rect x="36" y="165" width="22" height="18" rx="2" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="47" y="178" font-size="11" font-weight="900" fill="#000000" text-anchor="middle">C</text>
+
+  <!-- Neck -->
+  <rect x="85" y="118" width="30" height="30" rx="4" fill="#fba863"/>
+
+  <!-- Classic 80s / 90s Hair with sideburns -->
+  <path d="M64 75 Q62 35 100 32 Q138 35 136 75 Z" fill="#334155"/>
+
+  <!-- Head -->
+  <path d="M68 76 Q68 132 100 132 Q132 132 132 76 Q132 50 100 50 Q68 50 68 76 Z" fill="#fed7aa"/>
+  <circle cx="66" cy="86" r="8" fill="#fba863"/>
+  <circle cx="134" cy="86" r="8" fill="#fba863"/>
+
+  <!-- Wise Experienced Eyes -->
+  <circle cx="84" cy="80" r="4" fill="#0f172a"/>
+  <circle cx="116" cy="80" r="4" fill="#0f172a"/>
+  <!-- Forehead lines (Esperienza da senatore) -->
+  <path d="M84 62 Q100 58 116 62" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+
+  <!-- Thick 80s Italian Footballer Mustache (Baffone d'altri tempi) -->
+  <path d="M78 104 Q100 96 122 104 Q116 116 100 112 Q84 116 78 104 Z" fill="#1e293b"/>
+  <path d="M92 118 Q100 120 108 118" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+</svg>

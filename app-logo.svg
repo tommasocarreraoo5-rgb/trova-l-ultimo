@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#fbbf24" flood-opacity="0.8" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded canvas -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="#10b981" stroke-width="6" stroke-opacity="0.5" />
+
+  <!-- Centered Scaled Logo Element -->
+  <g transform="translate(256, 256) scale(8.5) translate(-24, -24)">
+    <!-- Soccer Ball Outer Ring -->
+    <circle cx="24" cy="24" r="18" stroke="url(#logoGrad)" stroke-width="2.6" fill="#090d16" />
+    <!-- Central Pentagon -->
+    <polygon points="24,16 30,20 28,27 20,27 18,20" fill="url(#logoGrad)" opacity="0.9" />
+    <!-- Radial Soccer Seam Lines -->
+    <line x1="24" y1="16" x2="24" y2="6.5" stroke="url(#logoGrad)" stroke-width="1.8" />
+    <line x1="30" y1="20" x2="39.5" y2="17" stroke="url(#logoGrad)" stroke-width="1.8" />
+    <line x1="28" y1="27" x2="35" y2="36.5" stroke="url(#logoGrad)" stroke-width="1.8" />
+    <line x1="20" y1="27" x2="13" y2="36.5" stroke="url(#logoGrad)" stroke-width="1.8" />
+    <line x1="18" y1="20" x2="8.5" y2="17" stroke="url(#logoGrad)" stroke-width="1.8" />
+    <!-- Dynamic Lightning Bolt 'L'Ultimo' -->
+    <path d="M27 6 L17 24 L23.5 24 L19.5 42 L31 20 L24.5 20 Z" fill="url(#boltGrad)" filter="url(#glow)" />
+  </g>
+</svg>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg_roccia" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="skin_r" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="200" height="200" rx="30" fill="url(#bg_roccia)"/>
+
+  <!-- Heavy Defender Jersey (Black & Gold) -->
+  <path d="M35 200 Q40 148 100 148 Q160 148 165 200 Z" fill="#0f172a"/>
+  <path d="M70 148 L100 180 L130 148" stroke="#eab308" stroke-width="5" fill="none"/>
+
+  <!-- Neck -->
+  <rect x="80" y="115" width="40" height="40" rx="6" fill="#eab308"/>
+
+  <!-- Short Buzzcut / Shaved Head with warrior fade -->
+  <path d="M64 80 Q64 36 100 36 Q136 36 136 80 Z" fill="#292524"/>
+
+  <!-- Head -->
+  <path d="M66 75 Q66 130 100 130 Q134 130 134 75 Q134 46 100 46 Q66 46 66 75 Z" fill="#fcd34d"/>
+  <circle cx="64" cy="85" r="8" fill="#fbbf24"/>
+  <circle cx="136" cy="85" r="8" fill="#fbbf24"/>
+
+  <!-- Intimidating Eyebrows -->
+  <path d="M72 73 L92 78" stroke="#1c1917" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M108 78 L128 73" stroke="#1c1917" stroke-width="4.5" stroke-linecap="round"/>
+
+  <!-- Battle Scar on Right Brow (Cicatrice da scontro aereo) -->
+  <line x1="84" y1="67" x2="80" y2="82" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Stern Dark Eyes -->
+  <circle cx="83" cy="84" r="4" fill="#000000"/>
+  <circle cx="84" cy="83" r="1.2" fill="#ffffff"/>
+  <circle cx="117" cy="84" r="4" fill="#000000"/>
+  <circle cx="118" cy="83" r="1.2" fill="#ffffff"/>
+
+  <!-- Big Nose -->
+  <path d="M100 80 L96 98 L104 98" stroke="#b45309" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+  <!-- Full Viking Beard (Barba Folta e Minacciosa) -->
+  <path d="M66 90 Q62 145 100 162 Q138 145 134 90 Q125 125 100 128 Q75 125 66 90 Z" fill="#1c1917"/>
+  <!-- Mustache -->
+  <path d="M85 106 Q100 102 115 106 Q100 116 85 106 Z" fill="#292524"/>
+
+  <!-- Clenched Mouth in Beard -->
+  <line x1="93" y1="114" x2="107" y2="114" stroke="#ffffff" stroke-width="2"/>
+</svg>
