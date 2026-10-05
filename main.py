@@ -1718,6 +1718,11 @@ def get_user_profile(player_id: Optional[str] = "my_profile"):
     cursor.execute("SELECT * FROM reviews WHERE target_player_id = ? ORDER BY created_at DESC LIMIT 5", (profile["id"],))
     profile["recent_reviews"] = [dict(r) for r in cursor.fetchall()]
 
+    # Follower count
+    cursor.execute("SELECT COUNT(*) FROM follows WHERE followed_id = ? OR followed_id = ?", (profile["id"], profile.get("nickname", "").replace("@", "")))
+    f_cnt = cursor.fetchone()
+    profile["followers_count"] = f_cnt[0] if f_cnt else 0
+
     conn.close()
     return profile
 
@@ -1790,7 +1795,130 @@ def get_players():
     return {"players": players}
 
 # ==========================================
-# ADMIN PANEL ENDPOINTS
+# SOCIAL & FOLLOWS & PLAYER SEARCH ENDPOINTS
+# ==========================================
+class FollowRequest(BaseModel):
+    follower_id: str
+
+@app.get("/api/search/players")
+@app.get("/api/players-search")
+def search_players(q: Optional[str] = "", viewer_id: Optional[str] = None):
+    conn = database.get_db()
+    cursor = conn.cursor()
+    query_str = f"%{q.strip().lower()}%" if q else "%"
+
+    cursor.execute("""
+    SELECT 
+        p.*,
+        u.username as linked_username,
+        u.full_name as linked_full_name,
+        (SELECT COUNT(*) FROM follows WHERE followed_id = p.id OR (u.username IS NOT NULL AND followed_id = u.username)) as followers_count
+    FROM players p
+    LEFT JOIN users u ON (p.id = 'user_' || u.id OR p.id = u.username OR p.name = u.full_name)
+    WHERE 
+        LOWER(p.name) LIKE ? 
+        OR LOWER(COALESCE(p.nickname, '')) LIKE ? 
+        OR LOWER(COALESCE(u.username, '')) LIKE ?
+        OR LOWER(COALESCE(u.full_name, '')) LIKE ?
+        OR LOWER(COALESCE(p.city, '')) LIKE ?
+    ORDER BY followers_count DESC, p.ovr DESC
+    LIMIT 30
+    """, (query_str, query_str, query_str, query_str, query_str))
+
+    rows = cursor.fetchall()
+    results = []
+
+    following_ids = set()
+    if viewer_id:
+        cursor.execute("SELECT followed_id FROM follows WHERE follower_id = ?", (viewer_id,))
+        following_ids = {r[0] for r in cursor.fetchall()}
+
+    for r in rows:
+        p = dict(r)
+        p["secondary_roles"] = json.loads(p["secondary_roles"]) if p.get("secondary_roles") else []
+        p["badges"] = json.loads(p["badges"]) if p.get("badges") else []
+        pid = p["id"]
+        p["is_following"] = pid in following_ids or (p.get("linked_username") and p["linked_username"] in following_ids)
+        if not p.get("linked_username") and p.get("nickname"):
+            p["linked_username"] = p["nickname"].replace("@", "")
+        results.append(p)
+
+    conn.close()
+    return {"players": results}
+
+@app.post("/api/players/{player_id}/toggle-follow")
+def toggle_follow_player(player_id: str, req: FollowRequest):
+    follower_id = req.follower_id.strip()
+    if not follower_id:
+        raise HTTPException(status_code=400, detail="Devi aver effettuato l'accesso per seguire un giocatore.")
+    if follower_id == player_id:
+        raise HTTPException(status_code=400, detail="Non puoi seguire te stesso.")
+
+    conn = database.get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM follows WHERE follower_id = ? AND followed_id = ?", (follower_id, player_id))
+    existing = cursor.fetchone()
+
+    if existing:
+        cursor.execute("DELETE FROM follows WHERE follower_id = ? AND followed_id = ?", (follower_id, player_id))
+        is_following = False
+    else:
+        cursor.execute("INSERT OR IGNORE INTO follows (follower_id, followed_id) VALUES (?, ?)", (follower_id, player_id))
+        is_following = True
+
+    conn.commit()
+
+    cursor.execute("SELECT COUNT(*) FROM follows WHERE followed_id = ?", (player_id,))
+    cnt_row = cursor.fetchone()
+    followers_count = cnt_row[0] if cnt_row else 0
+
+    conn.close()
+    return {
+        "success": True,
+        "is_following": is_following,
+        "followers_count": followers_count,
+        "message": "Ora segui questo giocatore!" if is_following else "Non segui più questo giocatore."
+    }
+
+@app.get("/api/card/player/{player_id}")
+@app.get("/api/players/{player_id}/card")
+def get_player_full_card(player_id: str, viewer_id: Optional[str] = None):
+    conn = database.get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT 
+        p.*,
+        u.username as linked_username,
+        u.full_name as linked_full_name,
+        (SELECT COUNT(*) FROM follows WHERE followed_id = p.id OR (u.username IS NOT NULL AND followed_id = u.username)) as followers_count
+    FROM players p
+    LEFT JOIN users u ON (p.id = 'user_' || u.id OR p.id = u.username OR p.name = u.full_name)
+    WHERE p.id = ? OR p.name = ? OR (u.username IS NOT NULL AND u.username = ?)
+    LIMIT 1
+    """, (player_id, player_id, player_id))
+
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Giocatore non trovato")
+
+    p = dict(row)
+    p["secondary_roles"] = json.loads(p["secondary_roles"]) if p.get("secondary_roles") else []
+    p["badges"] = json.loads(p["badges"]) if p.get("badges") else []
+
+    is_following = False
+    if viewer_id:
+        cursor.execute("SELECT id FROM follows WHERE follower_id = ? AND (followed_id = ? OR followed_id = ?)", (viewer_id, p["id"], p.get("linked_username", "")))
+        is_following = bool(cursor.fetchone())
+    p["is_following"] = is_following
+
+    cursor.execute("SELECT * FROM reviews WHERE target_player_id = ? ORDER BY created_at DESC LIMIT 5", (p["id"],))
+    p["recent_reviews"] = [dict(r) for r in cursor.fetchall()]
+
+    conn.close()
+    return p
 # ==========================================
 @app.get("/api/admin/overview")
 def admin_overview():
