@@ -1803,9 +1803,32 @@ class FollowRequest(BaseModel):
 @app.get("/api/search/players")
 @app.get("/api/players-search")
 def search_players(q: Optional[str] = "", viewer_id: Optional[str] = None):
+    # L'accesso con un account registrato è obbligatorio per cercare i membri
+    if not viewer_id or not viewer_id.strip():
+        raise HTTPException(status_code=401, detail="Devi avere un account ed effettuare l'accesso per cercare i giocatori.")
+
+    cleaned_viewer = viewer_id.strip()
     conn = database.get_db()
     cursor = conn.cursor()
-    query_str = f"%{q.strip().lower()}%" if q else "%"
+
+    # Verifica validità dell'account richiedente
+    cursor.execute("""
+        SELECT 1 FROM users WHERE username = ? OR ('user_' || id) = ? OR CAST(id AS TEXT) = ?
+        UNION
+        SELECT 1 FROM players WHERE id = ?
+        LIMIT 1
+    """, (cleaned_viewer, cleaned_viewer, cleaned_viewer, cleaned_viewer))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=401, detail="Account non riconosciuto. Effettua l'accesso per cercare i giocatori.")
+
+    trimmed = q.strip() if q else ""
+    # Se il campo di ricerca è vuoto, non restituire alcuna lista di giocatori
+    if not trimmed:
+        conn.close()
+        return {"players": []}
+
+    query_str = f"%{trimmed.lower()}%"
 
     cursor.execute("""
     SELECT 
