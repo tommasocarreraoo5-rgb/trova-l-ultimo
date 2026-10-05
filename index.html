@@ -2332,10 +2332,15 @@
 
       <!-- Results Container -->
       <div class="flex-1 overflow-y-auto mt-2 space-y-2.5 pr-1 max-h-[55vh]" id="playerSearchResults">
-        <!-- Dynamically populated -->
-        <div class="py-12 text-center text-slate-400">
-          <i data-lucide="radar" class="w-10 h-10 mx-auto text-cyan-400/40 mb-2"></i>
-          <p class="text-xs">Digita un nome o un @username per trovare compagni di squadra e avversari.</p>
+        <!-- Dynamically populated only when typing -->
+        <div class="py-14 text-center glass-panel rounded-2xl border border-slate-800/80 p-6">
+          <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center mx-auto mb-3 shadow-inner">
+            <i data-lucide="search" class="w-6 h-6"></i>
+          </div>
+          <h5 class="text-white font-bold text-sm">Cerca un Giocatore</h5>
+          <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+            Inizia a digitare il nome, cognome o @username per visualizzare i profili correlati e aprire la loro carta 3D.
+          </p>
         </div>
       </div>
 
@@ -2354,91 +2359,169 @@
       </button>
 
       <!-- 3D Card Box -->
-      <div class="card-perspective-container w-full max-w-[340px] sm:max-w-[360px] min-h-[500px]">
+      <div id="inspectCardPerspective" class="card-perspective-container w-full max-w-[340px] sm:max-w-[360px] min-h-[530px]">
         <div id="inspectCardWrapper" class="fut-card-wrapper w-full h-full">
-          <div id="inspectCardFront" class="fut-card-front holographic-card theme-gold p-6 flex flex-col justify-between select-none relative shadow-2xl rounded-3xl">
-            <div class="holographic-shine"></div>
+          <div id="inspectCardFlipper" class="fut-card-flipper w-full h-full">
+            
+            <!-- FRONT OF THE INSPECT CARD -->
+            <div id="inspectCardFront" class="fut-card-front holographic-card theme-gold p-6 flex flex-col justify-between select-none relative shadow-2xl rounded-3xl">
+              <div class="holographic-shine" id="inspectCardShine"></div>
 
-            <!-- Header: OVR + Role + Flag + Followers & Photo -->
-            <div class="flex items-start justify-between relative z-20">
-              <div class="flex flex-col items-center">
-                <span id="inspectOvrDisplay" class="font-bebas text-6xl font-black leading-none tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">
-                  80
-                </span>
-                <span id="inspectRoleDisplay" class="font-bebas text-xl font-black tracking-wider text-amber-300 uppercase -mt-1 drop-shadow">
-                  CC
-                </span>
-                <div class="w-6 h-4 mt-2 rounded overflow-hidden shadow border border-white/50 flex">
-                  <div class="w-1/3 h-full bg-green-600"></div>
-                  <div class="w-1/3 h-full bg-white"></div>
-                  <div class="w-1/3 h-full bg-red-600"></div>
-                </div>
-
-                <!-- Follower Counter Badge on inspected card -->
-                <div class="mt-2.5 flex flex-col items-center justify-center bg-black/65 backdrop-blur-sm border border-amber-300/40 rounded-xl px-2 py-1 shadow-md">
-                  <div class="flex items-center gap-1 text-amber-300 text-[10px] font-black tracking-tight">
-                    <i data-lucide="users" class="w-3 h-3"></i>
-                    <span id="inspectFollowersCount">0</span>
+              <!-- Header: OVR + Role + Flag + Followers & Photo -->
+              <div class="flex items-start justify-between relative z-20">
+                <div class="flex flex-col items-center">
+                  <span id="inspectOvrDisplay" class="font-bebas text-6xl font-black leading-none tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">
+                    80
+                  </span>
+                  <span id="inspectRoleDisplay" class="font-bebas text-xl font-black tracking-wider text-amber-300 uppercase -mt-1 drop-shadow">
+                    CC
+                  </span>
+                  <div class="w-6 h-4 mt-2 rounded overflow-hidden shadow border border-white/50 flex">
+                    <div class="w-1/3 h-full bg-green-600"></div>
+                    <div class="w-1/3 h-full bg-white"></div>
+                    <div class="w-1/3 h-full bg-red-600"></div>
                   </div>
-                  <span class="text-[7.5px] font-extrabold text-slate-300 tracking-wider uppercase mt-0.5">Followers</span>
+
+                  <!-- Follower Counter Badge on inspected card -->
+                  <div class="mt-2.5 flex flex-col items-center justify-center bg-black/65 backdrop-blur-sm border border-amber-300/40 rounded-xl px-2 py-1 shadow-md">
+                    <div class="flex items-center gap-1 text-amber-300 text-[10px] font-black tracking-tight">
+                      <i data-lucide="users" class="w-3 h-3"></i>
+                      <span id="inspectFollowersCount">0</span>
+                    </div>
+                    <span class="text-[7.5px] font-extrabold text-slate-300 tracking-wider uppercase mt-0.5">Followers</span>
+                  </div>
+                </div>
+
+                <div class="relative w-40 h-40 -mr-2">
+                  <img 
+                    id="inspectPhotoDisplay" 
+                    src="/static/avatars/bomber.svg" 
+                    alt="Avatar Giocatore" 
+                    class="w-full h-full object-cover rounded-2xl border-2 border-amber-300/60 shadow-2xl bg-slate-900"
+                  >
+                  <div class="absolute -bottom-2 -left-2 bg-slate-950 text-amber-300 border border-amber-400/50 px-2.5 py-0.5 rounded-full text-[10px] font-black shadow-lg flex items-center gap-1">
+                    <span id="inspectFootDisplay">Dx</span> • <span id="inspectAgeDisplay">25 anni</span>
+                  </div>
                 </div>
               </div>
 
-              <div class="relative w-40 h-40 -mr-2">
-                <img 
-                  id="inspectPhotoDisplay" 
-                  src="/static/avatars/bomber.svg" 
-                  alt="Avatar Giocatore" 
-                  class="w-full h-full object-cover rounded-2xl border-2 border-amber-300/60 shadow-2xl bg-slate-900"
-                >
-                <div class="absolute -bottom-2 -left-2 bg-slate-950 text-amber-300 border border-amber-400/50 px-2.5 py-0.5 rounded-full text-[10px] font-black shadow-lg flex items-center gap-1">
-                  <span id="inspectFootDisplay">Dx</span> • <span id="inspectAgeDisplay">25 anni</span>
+              <!-- Name & Nickname -->
+              <div class="text-center relative z-20 mt-3 pt-2 border-t border-amber-400/40">
+                <h3 id="inspectNameDisplay" class="font-bebas text-2xl tracking-wider text-white drop-shadow truncate">
+                  NOME
+                </h3>
+                <p id="inspectNicknameDisplay" class="text-xs font-bold text-amber-300 -mt-0.5 italic">
+                  @username
+                </p>
+              </div>
+
+              <!-- Stats Grid -->
+              <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 py-2 px-3 bg-black/75 backdrop-blur-md rounded-xl border border-amber-400/40 text-xs font-black relative z-20 mt-2">
+                <div class="flex items-center justify-between">
+                  <span id="inspectVelDisplay" class="font-bebas text-lg text-white">75</span>
+                  <span class="text-amber-300 text-[11px] font-black">VEL</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span id="inspectDriDisplay" class="font-bebas text-lg text-white">75</span>
+                  <span class="text-amber-300 text-[11px] font-black">DRI</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span id="inspectTirDisplay" class="font-bebas text-lg text-white">75</span>
+                  <span class="text-amber-300 text-[11px] font-black">TIR</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span id="inspectDifDisplay" class="font-bebas text-lg text-white">75</span>
+                  <span class="text-amber-300 text-[11px] font-black">DIF</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span id="inspectPasDisplay" class="font-bebas text-lg text-white">75</span>
+                  <span class="text-amber-300 text-[11px] font-black">PAS</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span id="inspectFisDisplay" class="font-bebas text-lg text-white">75</span>
+                  <span class="text-amber-300 text-[11px] font-black">FIS</span>
                 </div>
               </div>
+
+              <!-- Badges Preview on Inspect Card Front -->
+              <div id="inspectBadgesPreview" class="flex flex-wrap gap-1 justify-center relative z-20 mt-2">
+              </div>
+
+              <!-- City, Flip Button & Reliability -->
+              <div class="flex items-center justify-between text-[11px] font-bold text-slate-200 relative z-20 mt-2 pt-2 border-t border-amber-400/30">
+                <span id="inspectCityDisplay" class="flex items-center gap-1">📍 Milano</span>
+                <button type="button" onclick="flipInspectPlayerCard()" class="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-amber-300 hover:text-white bg-black/75 hover:bg-black/95 px-2.5 py-1 rounded-full border border-amber-400/60 transition shadow active:scale-95" title="Gira carta per vedere il retro 3D">
+                  <i data-lucide="repeat" class="w-3 h-3 text-emerald-400"></i>
+                  <span>Gira Retro</span>
+                </button>
+                <span id="inspectReliabilityDisplay" class="text-emerald-400 text-[10px] uppercase font-black tracking-wider bg-black/70 px-2 py-0.5 rounded-full border border-emerald-500/50">🛡️ 100%</span>
+              </div>
+
             </div>
 
-            <!-- Name & Nickname -->
-            <div class="text-center relative z-20 mt-3 pt-2 border-t border-amber-400/40">
-              <h3 id="inspectNameDisplay" class="font-bebas text-2xl tracking-wider text-white drop-shadow truncate">
-                NOME
-              </h3>
-              <p id="inspectNicknameDisplay" class="text-xs font-bold text-amber-300 -mt-0.5 italic">
-                @username
-              </p>
-            </div>
+            <!-- BACK OF THE INSPECT CARD -->
+            <div id="inspectCardBack" class="fut-card-back theme-gold p-6 flex flex-col justify-between select-none shadow-2xl border-2 border-amber-400 rounded-3xl">
+              <div>
+                <div class="flex items-center justify-between pb-3 border-b border-amber-400/40">
+                  <div>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-amber-300">CURRICULUM CALCETTO</span>
+                    <h4 class="font-bebas text-xl text-white tracking-wide truncate max-w-[150px] sm:max-w-[180px]" id="inspectCardBackNameDisplay">NOME GIOCATORE</h4>
+                  </div>
+                  <div class="flex flex-col items-end gap-1">
+                    <div class="flex items-center gap-1.5">
+                      <span id="inspectFairPlayRatingBadge" class="px-2 py-0.5 rounded bg-black/80 border border-amber-400 text-amber-300 text-[10px] font-black" title="Affidabilità Persona">
+                        ⭐ 5.0 PERSONA
+                      </span>
+                      <span id="inspectSkillAccuracyBadge" class="px-2 py-0.5 rounded bg-black/80 border border-emerald-400 text-emerald-300 text-[10px] font-black" title="Fedeltà Scheda Calcio">
+                        🎯 5.0 SCHEDA
+                      </span>
+                    </div>
+                    <button type="button" onclick="flipInspectPlayerCard()" class="px-2 py-0.5 rounded-lg bg-black/80 hover:bg-black text-amber-300 hover:text-white border border-amber-400/60 text-[10px] font-black flex items-center gap-1 transition shadow active:scale-95" title="Torna al Fronte">
+                      <i data-lucide="repeat" class="w-3 h-3 text-emerald-400"></i>
+                      <span>Fronte</span>
+                    </button>
+                  </div>
+                </div>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 py-2 px-3 bg-black/75 backdrop-blur-md rounded-xl border border-amber-400/40 text-xs font-black relative z-20 mt-2">
-              <div class="flex items-center justify-between">
-                <span id="inspectVelDisplay" class="font-bebas text-lg text-white">75</span>
-                <span class="text-amber-300 text-[11px] font-black">VEL</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span id="inspectDriDisplay" class="font-bebas text-lg text-white">75</span>
-                <span class="text-amber-300 text-[11px] font-black">DRI</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span id="inspectTirDisplay" class="font-bebas text-lg text-white">75</span>
-                <span class="text-amber-300 text-[11px] font-black">TIR</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span id="inspectDifDisplay" class="font-bebas text-lg text-white">75</span>
-                <span class="text-amber-300 text-[11px] font-black">DIF</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span id="inspectPasDisplay" class="font-bebas text-lg text-white">75</span>
-                <span class="text-amber-300 text-[11px] font-black">PAS</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span id="inspectFisDisplay" class="font-bebas text-lg text-white">75</span>
-                <span class="text-amber-300 text-[11px] font-black">FIS</span>
-              </div>
-            </div>
+                <!-- Career Stats (Partite, MVP, Affidabilità) -->
+                <div class="grid grid-cols-3 gap-2 py-3 text-center">
+                  <div class="bg-black/75 p-2 rounded-xl border border-amber-400/30">
+                    <span id="inspectMatchesPlayedDisplay" class="font-bebas text-2xl text-white leading-none">0</span>
+                    <p class="text-[10px] text-amber-300 uppercase font-black">Partite</p>
+                  </div>
+                  <div class="bg-black/75 p-2 rounded-xl border border-amber-400/30">
+                    <span id="inspectMvpDisplay" class="font-bebas text-2xl text-amber-400 leading-none">0</span>
+                    <p class="text-[10px] text-amber-300 uppercase font-black">MVP</p>
+                  </div>
+                  <div class="bg-black/75 p-2 rounded-xl border border-amber-400/30">
+                    <span id="inspectReliabilityPctDisplay" class="font-bebas text-2xl text-emerald-400 leading-none">100%</span>
+                    <p class="text-[10px] text-emerald-300 uppercase font-black">Affidabilità</p>
+                  </div>
+                </div>
 
-            <!-- City & Reliability -->
-            <div class="flex items-center justify-between text-[11px] font-bold text-slate-200 relative z-20 mt-2 pt-2 border-t border-amber-400/30">
-              <span id="inspectCityDisplay" class="flex items-center gap-1">📍 Milano</span>
-              <span id="inspectReliabilityDisplay" class="text-emerald-400">🛡️ 100% Affidabile</span>
+                <!-- Bio -->
+                <div class="bg-black/80 p-3 rounded-xl border border-amber-400/30 text-xs text-slate-100 space-y-1">
+                  <span class="text-[10px] font-black uppercase text-amber-300 block">Identikit da Spogliatoio:</span>
+                  <p id="inspectCardBackBioDisplay" class="italic leading-relaxed text-slate-200 font-medium line-clamp-3">
+                    "Pronto a scendere in campo e dare il massimo!"
+                  </p>
+                </div>
+
+                <!-- Badges -->
+                <div class="mt-3">
+                  <span class="text-[10px] font-black uppercase text-amber-300 block mb-1.5">Targhette Sbloccate:</span>
+                  <div id="inspectCardBackBadgesList" class="space-y-1 text-xs font-semibold max-h-24 overflow-y-auto pr-1"></div>
+                </div>
+              </div>
+
+              <!-- Quick WhatsApp contact on back of card -->
+              <div class="pt-3 border-t border-amber-400/30 text-center">
+                <a id="inspectWhatsAppLink" href="#" target="_blank" class="w-full py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition shadow">
+                  <i data-lucide="phone-call" class="w-3.5 h-3.5"></i>
+                  <span>Contatta su WhatsApp</span>
+                </a>
+              </div>
+
             </div>
 
           </div>
@@ -2447,6 +2530,10 @@
 
       <!-- Action buttons underneath the card -->
       <div class="w-full max-w-[340px] sm:max-w-[360px] mt-4 flex items-center gap-2">
+        <button type="button" onclick="flipInspectPlayerCard()" class="px-3.5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-400/40 font-black text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-lg" title="Gira la carta in 3D">
+          <i data-lucide="repeat" class="w-4 h-4 text-emerald-400"></i>
+          <span id="inspectFlipBtnLabel">Gira Carta</span>
+        </button>
         <button id="inspectFollowBtn" onclick="toggleFollowInspectedPlayer()" class="flex-1 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-lg shadow-cyan-500/25">
           <i data-lucide="user-plus" class="w-4 h-4"></i>
           <span id="inspectFollowBtnText">Segui Giocatore</span>
