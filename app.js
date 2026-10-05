@@ -4736,6 +4736,7 @@ function showInAppNotificationToast(notif) {
   else if (notif.type === 'match_confirmation') icon = '🎉';
   else if (notif.type === 'match_review_reminder') icon = '⭐';
   else if (notif.type === 'card_adjustment_advice') icon = '⚠️';
+  else if (notif.type === 'new_follower') icon = '👥';
 
   if (iconEl) iconEl.innerText = icon;
   if (titleEl) titleEl.innerText = notif.title || 'Nuova notifica';
@@ -4902,6 +4903,12 @@ function renderNotificationsList() {
       icon = 'sliders';
       iconColor = 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
       actionBtnHtml = `<button onclick="handleNotificationClickById(${n.id})" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] transition shadow">🎴 Apri Scheda</button>`;
+    } else if (n.type === 'new_follower') {
+      icon = 'users';
+      iconColor = 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30';
+      if (n.sender_id) {
+        actionBtnHtml = `<button onclick="handleNotificationClickById(${n.id})" class="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-[11px] transition shadow">👁️ Scheda 3D</button>`;
+      }
     }
 
     const unreadBg = !n.is_read ? 'bg-slate-900/90 border-slate-700/80 ring-1 ring-amber-400/40' : 'bg-slate-950/60 border-slate-800/60';
@@ -4992,6 +4999,10 @@ async function handleNotificationClick(notif) {
     if (notif.match_id) openReviewModalForMatch(notif.match_id);
   } else if (notif.type === 'card_adjustment_advice') {
     goToCardToReviewNotice();
+  } else if (notif.type === 'new_follower') {
+    if (notif.sender_id) {
+      openInspectPlayerCard(notif.sender_id);
+    }
   }
 }
 
