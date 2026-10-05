@@ -4,12 +4,117 @@ import os
 import hashlib
 from datetime import datetime, timedelta
 
+DEFAULT_TURSO_URL = "https://trova-lultimo-tommasocarreraoo5-rgb.aws-eu-west-1.turso.io"
+DEFAULT_TURSO_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3OTEyMTcyMjIsImlkIjoiMDFhMTBjZGMtZTIwMS03OTI1LTlhNjEtYTg1NjBkNzNiNTVkIiwia2lkIjoiSllIb2tEOWNxLVFDUGx2UHp4Vzl0UF85WlI4Sm93MXpsT21CRVR4MW00RSIsInJpZCI6IjRhYmY0YmQ3LWY4NTMtNGU2ZC04OTBiLTc0ZTVjNjlkN2YyYyJ9.iBzkMVLlu0fT3iPN2m9_S0ucXvIohC1ODzMnrYYv2wP05AVhSVnO7bmLqwOaaRXRGQhcPGt3wSYrV373otfPDQ"
+
+TURSO_DATABASE_URL = os.environ.get("TURSO_DATABASE_URL", DEFAULT_TURSO_URL)
+TURSO_AUTH_TOKEN = os.environ.get("TURSO_AUTH_TOKEN", DEFAULT_TURSO_TOKEN)
+
+class TursoRow:
+    def __init__(self, cols, vals):
+        self._d = dict(zip(cols, vals))
+        self._v = list(vals)
+    def __getitem__(self, k):
+        if isinstance(k, str):
+            return self._d[k]
+        return self._v[k]
+    def get(self, k, default=None):
+        return self._d.get(k, default)
+    def keys(self):
+        return self._d.keys()
+    def values(self):
+        return self._d.values()
+    def items(self):
+        return self._d.items()
+    def __iter__(self):
+        return iter(self._d.keys())
+    def __contains__(self, k):
+        return k in self._d
+    def __len__(self):
+        return len(self._v)
+    def __repr__(self):
+        return f"<TursoRow {self._d}>"
+
+class TursoCursor:
+    def __init__(self, client):
+        self._client = client
+        self._rows = []
+        self._pos = 0
+        self.lastrowid = None
+        self.rowcount = 0
+
+    def execute(self, sql, params=None):
+        if params is None:
+            params = []
+        elif isinstance(params, (tuple, list)):
+            params = list(params)
+        else:
+            params = [params]
+        res = self._client.execute(sql, params)
+        self.lastrowid = getattr(res, "last_insert_rowid", None)
+        self.rowcount = getattr(res, "rows_affected", 0)
+        cols = getattr(res, "columns", ())
+        raw_rows = getattr(res, "rows", [])
+        self._rows = [TursoRow(cols, r) for r in raw_rows]
+        self._pos = 0
+        return self
+
+    def executemany(self, sql, seq_of_params):
+        for p in seq_of_params:
+            self.execute(sql, p)
+        return self
+
+    def fetchone(self):
+        if self._pos < len(self._rows):
+            r = self._rows[self._pos]
+            self._pos += 1
+            return r
+        return None
+
+    def fetchall(self):
+        res = self._rows[self._pos:]
+        self._pos = len(self._rows)
+        return res
+
+class TursoConnection:
+    def __init__(self, url, token):
+        import libsql_client
+        clean_url = url
+        if clean_url.startswith("libsql://"):
+            clean_url = "https://" + clean_url[len("libsql://"):]
+        self._client = libsql_client.create_client_sync(url=clean_url, auth_token=token)
+        self.row_factory = None
+
+    def cursor(self):
+        return TursoCursor(self._client)
+
+    def execute(self, sql, params=None):
+        cur = self.cursor()
+        return cur.execute(sql, params)
+
+    def commit(self):
+        pass
+
+    def rollback(self):
+        pass
+
+    def close(self):
+        try:
+            self._client.close()
+        except Exception:
+            pass
+
 DB_PATH = os.path.join(os.path.dirname(__file__), "data", "trova_ultimo.db")
 
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
 def get_db():
+    if TURSO_DATABASE_URL and TURSO_AUTH_TOKEN:
+        try:
+            return TursoConnection(TURSO_DATABASE_URL, TURSO_AUTH_TOKEN)
+        except Exception as e:
+            print("Turso connection warning, falling back to SQLite:", e)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
