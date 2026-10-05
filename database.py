@@ -296,6 +296,22 @@ def init_db():
     )
     """)
 
+    # Follows Table (Social feature)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS follows (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        follower_id TEXT NOT NULL,
+        followed_id TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(follower_id, followed_id)
+    )
+    """)
+    try:
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_follows_followed ON follows(followed_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_follows_follower ON follows(follower_id)")
+    except Exception:
+        pass
+
     # Add columns if migrating existing DB
     try:
         cursor.execute("ALTER TABLE users ADD COLUMN phone TEXT DEFAULT ''")
