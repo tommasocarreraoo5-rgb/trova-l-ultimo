@@ -3881,8 +3881,12 @@ function initCardTilt() {
   const shine = document.getElementById('cardShine');
   if (!container || !card) return;
 
-  let isTouching = false;
   let gyroActive = false;
+  let touchHoldTimer = null;
+  let is3DModeActive = false;
+  let startTouchX = 0;
+  let startTouchY = 0;
+  let hasMoved = false;
 
   function applyTilt(x, y, rect, scale = 1.04) {
     const centerX = rect.width / 2;
@@ -3926,48 +3930,74 @@ function initCardTilt() {
     resetTilt();
   });
 
-  // 2. Touch Events (Mobile Touch Drag & Hold)
+  // 2. Touch Events (Mobile: scorrimento fluido di default, rotazione 3D solo con pressione prolungata)
   container.addEventListener('touchstart', (e) => {
-    isTouching = true;
-    // Request gyroscope permission on iOS if supported and not yet granted
+    if (!e.touches || !e.touches[0]) return;
+    const touch = e.touches[0];
+    startTouchX = touch.clientX;
+    startTouchY = touch.clientY;
+    hasMoved = false;
+    is3DModeActive = false;
+
+    // Request gyroscope on iOS if supported
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function' && !gyroActive) {
       DeviceOrientationEvent.requestPermission().then(response => {
         if (response === 'granted') gyroActive = true;
       }).catch(() => {});
     }
 
-    if (e.touches && e.touches[0]) {
-      const touch = e.touches[0];
-      const rect = container.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-      applyTilt(x, y, rect, 1.05);
-    }
+    clearTimeout(touchHoldTimer);
+    touchHoldTimer = setTimeout(() => {
+      if (!hasMoved) {
+        is3DModeActive = true;
+        card.classList.add('touch-3d-active');
+        if (navigator.vibrate) {
+          try { navigator.vibrate(25); } catch (_) {}
+        }
+        const rect = container.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        applyTilt(x, y, rect, 1.05);
+      }
+    }, 220);
   }, { passive: true });
 
   container.addEventListener('touchmove', (e) => {
     if (!e.touches || !e.touches[0]) return;
     const touch = e.touches[0];
+    const diffX = Math.abs(touch.clientX - startTouchX);
+    const diffY = Math.abs(touch.clientY - startTouchY);
+
+    if (!is3DModeActive) {
+      if (diffX > 8 || diffY > 8) {
+        hasMoved = true;
+        clearTimeout(touchHoldTimer); // Annulla rotazione e lascia scorrere la pagina liberamente!
+      }
+      return;
+    }
+
+    // Modalità 3D attiva intenzionalmente con pressione: ruota e blocca scroll
     const rect = container.getBoundingClientRect();
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
     applyTilt(x, y, rect, 1.05);
-    if (e.cancelable) e.preventDefault(); // Prevent accidental scroll while tilting card
+    if (e.cancelable) e.preventDefault();
   }, { passive: false });
 
-  container.addEventListener('touchend', () => {
-    isTouching = false;
+  function endTouch() {
+    clearTimeout(touchHoldTimer);
+    is3DModeActive = false;
+    hasMoved = false;
+    card.classList.remove('touch-3d-active');
     resetTilt();
-  }, { passive: true });
+  }
 
-  container.addEventListener('touchcancel', () => {
-    isTouching = false;
-    resetTilt();
-  }, { passive: true });
+  container.addEventListener('touchend', endTouch, { passive: true });
+  container.addEventListener('touchcancel', endTouch, { passive: true });
 
   // 3. Gyroscope / Device Orientation (Tilt physical phone in hand)
   window.addEventListener('deviceorientation', (e) => {
-    if (isTouching) return; // Touch drag takes priority
+    if (is3DModeActive) return;
     if (state.currentTab !== 'card' && state.currentTab !== 'profile') return;
     if (e.gamma === null || e.beta === null) return;
     gyroActive = true;
@@ -5357,7 +5387,11 @@ function initInspectCardTilt() {
   const shine = document.getElementById('inspectCardShine');
   if (!container || !card) return;
 
-  let isTouching = false;
+  let touchHoldTimer = null;
+  let is3DModeActive = false;
+  let startTouchX = 0;
+  let startTouchY = 0;
+  let hasMoved = false;
 
   function applyTilt(x, y, rect, scale = 1.04) {
     const centerX = rect.width / 2;
@@ -5401,21 +5435,46 @@ function initInspectCardTilt() {
     resetTilt();
   });
 
-  // 2. Touch Events (Mobile Touch Drag)
+  // 2. Touch Events (Mobile: scorrimento modal fluido di default, rotazione 3D solo con pressione prolungata)
   container.addEventListener('touchstart', (e) => {
-    isTouching = true;
-    if (e.touches && e.touches[0]) {
-      const touch = e.touches[0];
-      const rect = container.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-      applyTilt(x, y, rect, 1.05);
-    }
+    if (!e.touches || !e.touches[0]) return;
+    const touch = e.touches[0];
+    startTouchX = touch.clientX;
+    startTouchY = touch.clientY;
+    hasMoved = false;
+    is3DModeActive = false;
+
+    clearTimeout(touchHoldTimer);
+    touchHoldTimer = setTimeout(() => {
+      if (!hasMoved) {
+        is3DModeActive = true;
+        card.classList.add('touch-3d-active');
+        if (navigator.vibrate) {
+          try { navigator.vibrate(25); } catch (_) {}
+        }
+        const rect = container.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        applyTilt(x, y, rect, 1.05);
+      }
+    }, 220);
   }, { passive: true });
 
   container.addEventListener('touchmove', (e) => {
     if (!e.touches || !e.touches[0]) return;
     const touch = e.touches[0];
+    const diffX = Math.abs(touch.clientX - startTouchX);
+    const diffY = Math.abs(touch.clientY - startTouchY);
+
+    if (!is3DModeActive) {
+      if (diffX > 8 || diffY > 8) {
+        hasMoved = true;
+        clearTimeout(touchHoldTimer); // Annulla rotazione e lascia scrollare il popup verso il basso!
+      }
+      return;
+    }
+
+    // Modalità 3D attiva intenzionalmente: ruota la carta
     const rect = container.getBoundingClientRect();
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
@@ -5423,15 +5482,16 @@ function initInspectCardTilt() {
     if (e.cancelable) e.preventDefault();
   }, { passive: false });
 
-  container.addEventListener('touchend', () => {
-    isTouching = false;
+  function endTouch() {
+    clearTimeout(touchHoldTimer);
+    is3DModeActive = false;
+    hasMoved = false;
+    card.classList.remove('touch-3d-active');
     resetTilt();
-  }, { passive: true });
+  }
 
-  container.addEventListener('touchcancel', () => {
-    isTouching = false;
-    resetTilt();
-  }, { passive: true });
+  container.addEventListener('touchend', endTouch, { passive: true });
+  container.addEventListener('touchcancel', endTouch, { passive: true });
 }
 
 function flipInspectPlayerCard() {
