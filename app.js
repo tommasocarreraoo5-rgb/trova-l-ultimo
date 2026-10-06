@@ -3881,7 +3881,6 @@ function initCardTilt() {
   const shine = document.getElementById('cardShine');
   if (!container || !card) return;
 
-  let gyroActive = false;
   let touchHoldTimer = null;
   let is3DModeActive = false;
   let startTouchX = 0;
@@ -3918,7 +3917,7 @@ function initCardTilt() {
     if (shine) shine.style.opacity = '0.35';
   }
 
-  // 1. Mouse Events (Desktop)
+  // 1. Mouse Events (Desktop: mouse hover 3D reattivo)
   container.addEventListener('mousemove', (e) => {
     const rect = container.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -3930,7 +3929,7 @@ function initCardTilt() {
     resetTilt();
   });
 
-  // 2. Touch Events (Mobile: scorrimento fluido di default, rotazione 3D solo con pressione prolungata)
+  // 2. Touch Events (Mobile: scorrimento 100% libero se si passa il dito; 3D SOLO ed ESCLUSIVAMENTE se si tiene premuto a lungo)
   container.addEventListener('touchstart', (e) => {
     if (!e.touches || !e.touches[0]) return;
     const touch = e.touches[0];
@@ -3939,27 +3938,17 @@ function initCardTilt() {
     hasMoved = false;
     is3DModeActive = false;
 
-    // Request gyroscope on iOS if supported
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function' && !gyroActive) {
-      DeviceOrientationEvent.requestPermission().then(response => {
-        if (response === 'granted') gyroActive = true;
-      }).catch(() => {});
-    }
-
     clearTimeout(touchHoldTimer);
+    // Attiva il 3D solo dopo 350ms di pressione continua senza muovere il dito
     touchHoldTimer = setTimeout(() => {
       if (!hasMoved) {
         is3DModeActive = true;
         card.classList.add('touch-3d-active');
         if (navigator.vibrate) {
-          try { navigator.vibrate(25); } catch (_) {}
+          try { navigator.vibrate(40); } catch (_) {}
         }
-        const rect = container.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        applyTilt(x, y, rect, 1.05);
       }
-    }, 220);
+    }, 350);
   }, { passive: true });
 
   container.addEventListener('touchmove', (e) => {
@@ -3968,15 +3957,16 @@ function initCardTilt() {
     const diffX = Math.abs(touch.clientX - startTouchX);
     const diffY = Math.abs(touch.clientY - startTouchY);
 
+    // Se il dito si muove prima di aver tenuto premuto: è uno SCROLL naturale!
     if (!is3DModeActive) {
-      if (diffX > 8 || diffY > 8) {
+      if (diffX > 5 || diffY > 5) {
         hasMoved = true;
-        clearTimeout(touchHoldTimer); // Annulla rotazione e lascia scorrere la pagina liberamente!
+        clearTimeout(touchHoldTimer); // Annulla completamente la modalità 3D
       }
-      return;
+      return; // Lascia scorrere la pagina al 100%, zero inclinazione!
     }
 
-    // Modalità 3D attiva intenzionalmente con pressione: ruota e blocca scroll
+    // Modalità 3D attiva (utente ha tenuto premuto fermo per 350ms e ORA trascina il dito)
     const rect = container.getBoundingClientRect();
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
@@ -3994,33 +3984,6 @@ function initCardTilt() {
 
   container.addEventListener('touchend', endTouch, { passive: true });
   container.addEventListener('touchcancel', endTouch, { passive: true });
-
-  // 3. Gyroscope / Device Orientation (Tilt physical phone in hand)
-  window.addEventListener('deviceorientation', (e) => {
-    if (is3DModeActive) return;
-    if (state.currentTab !== 'card' && state.currentTab !== 'profile') return;
-    if (e.gamma === null || e.beta === null) return;
-    gyroActive = true;
-
-    // Normal smartphone holding posture: ~45 deg beta
-    const gamma = Math.min(Math.max(e.gamma, -35), 35);
-    const beta = Math.min(Math.max(e.beta - 45, -35), 35);
-
-    const mult = state.isCardFlipped ? -1 : 1;
-    const rotateX = (-beta * 0.65);
-    const rotateY = (gamma * 0.65 * mult);
-
-    card.classList.remove('smooth-reset');
-    card.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
-
-    if (shine && !state.isCardFlipped) {
-      const shineX = Math.min(Math.max(50 + (gamma * 1.6), 5), 95);
-      const shineY = Math.min(Math.max(50 + (beta * 1.6), 5), 95);
-      shine.style.setProperty('--shine-x', `${shineX.toFixed(1)}%`);
-      shine.style.setProperty('--shine-y', `${shineY.toFixed(1)}%`);
-      shine.style.opacity = '0.85';
-    }
-  }, { passive: true });
 }
 
 function flipPlayerCard() {
@@ -5445,19 +5408,16 @@ function initInspectCardTilt() {
     is3DModeActive = false;
 
     clearTimeout(touchHoldTimer);
+    // Attiva il 3D solo dopo 350ms di pressione continua senza muovere il dito
     touchHoldTimer = setTimeout(() => {
       if (!hasMoved) {
         is3DModeActive = true;
         card.classList.add('touch-3d-active');
         if (navigator.vibrate) {
-          try { navigator.vibrate(25); } catch (_) {}
+          try { navigator.vibrate(40); } catch (_) {}
         }
-        const rect = container.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        applyTilt(x, y, rect, 1.05);
       }
-    }, 220);
+    }, 350);
   }, { passive: true });
 
   container.addEventListener('touchmove', (e) => {
@@ -5466,8 +5426,9 @@ function initInspectCardTilt() {
     const diffX = Math.abs(touch.clientX - startTouchX);
     const diffY = Math.abs(touch.clientY - startTouchY);
 
+    // Se il dito si muove prima di aver tenuto premuto: è uno SCROLL naturale!
     if (!is3DModeActive) {
-      if (diffX > 8 || diffY > 8) {
+      if (diffX > 5 || diffY > 5) {
         hasMoved = true;
         clearTimeout(touchHoldTimer); // Annulla rotazione e lascia scrollare il popup verso il basso!
       }
