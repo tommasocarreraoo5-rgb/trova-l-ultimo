@@ -866,12 +866,12 @@
         <!-- LEFT: 3D CARD SHOWCASE -->
         <div class="lg:col-span-5 flex flex-col items-center">
           
-          <div class="card-perspective-container w-full max-w-[340px] sm:max-w-[370px] min-h-[530px]">
+          <div class="card-perspective-container w-full max-w-[340px] sm:max-w-[370px] min-h-[480px] sm:min-h-[530px]">
             <div id="playerCardWrapper" class="fut-card-wrapper w-full h-full">
               <div id="playerCardFlipper" class="fut-card-flipper w-full h-full">
                 
                 <!-- FRONT OF THE CARD -->
-                <div id="cardFront" class="fut-card-front holographic-card theme-gold p-6 flex flex-col justify-between select-none relative shadow-2xl">
+                <div id="cardFront" class="fut-card-front holographic-card theme-gold p-4 sm:p-6 flex flex-col justify-between select-none relative shadow-2xl">
                   <div class="holographic-shine" id="cardShine"></div>
 
                   <!-- Header Rating & Avatar -->
@@ -899,7 +899,7 @@
                       </div>
                     </div>
 
-                    <div class="relative w-40 h-40 sm:w-44 sm:h-44 -mr-2">
+                    <div class="relative w-36 h-36 sm:w-44 sm:h-44 -mr-2">
                       <img 
                         id="cardPhotoDisplay" 
                         src="/static/avatars/bomber.svg" 
@@ -974,7 +974,7 @@
                 </div>
 
                 <!-- BACK OF THE CARD -->
-                <div id="cardBack" class="fut-card-back theme-gold p-6 flex flex-col justify-between select-none shadow-2xl border-2 border-amber-400">
+                <div id="cardBack" class="fut-card-back theme-gold p-4 sm:p-6 flex flex-col justify-between select-none shadow-2xl border-2 border-amber-400">
                   
                   <div>
                     <div class="flex items-center justify-between pb-3 border-b border-amber-400/40">
@@ -1040,6 +1040,12 @@
               </div>
             </div>
           </div>
+
+          <!-- Hint Mobile Scorrimento & 3D -->
+          <p class="text-[10.5px] text-slate-400 font-semibold text-center mt-2.5 flex items-center justify-center gap-1.5 md:hidden opacity-85">
+            <i data-lucide="hand" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>Scorri per muoverti • Tieni premuto per ruotare in 3D</span>
+          </p>
 
           <!-- Stile Themes -->
           <div class="mt-6 flex items-center gap-2">
@@ -2359,12 +2365,12 @@
       </button>
 
       <!-- 3D Card Box -->
-      <div id="inspectCardPerspective" class="card-perspective-container w-full max-w-[340px] sm:max-w-[360px] min-h-[530px]">
+      <div id="inspectCardPerspective" class="card-perspective-container w-full max-w-[340px] sm:max-w-[360px] min-h-[480px] sm:min-h-[530px]">
         <div id="inspectCardWrapper" class="fut-card-wrapper w-full h-full">
           <div id="inspectCardFlipper" class="fut-card-flipper w-full h-full">
             
             <!-- FRONT OF THE INSPECT CARD -->
-            <div id="inspectCardFront" class="fut-card-front holographic-card theme-gold p-6 flex flex-col justify-between select-none relative shadow-2xl rounded-3xl">
+            <div id="inspectCardFront" class="fut-card-front holographic-card theme-gold p-4 sm:p-6 flex flex-col justify-between select-none relative shadow-2xl rounded-3xl">
               <div class="holographic-shine" id="inspectCardShine"></div>
 
               <!-- Header: OVR + Role + Flag + Followers & Photo -->
@@ -2392,7 +2398,7 @@
                   </div>
                 </div>
 
-                <div class="relative w-40 h-40 -mr-2">
+                <div class="relative w-36 h-36 sm:w-40 sm:h-40 -mr-2">
                   <img 
                     id="inspectPhotoDisplay" 
                     src="/static/avatars/bomber.svg" 
@@ -2460,7 +2466,7 @@
             </div>
 
             <!-- BACK OF THE INSPECT CARD -->
-            <div id="inspectCardBack" class="fut-card-back theme-gold p-6 flex flex-col justify-between select-none shadow-2xl border-2 border-amber-400 rounded-3xl">
+            <div id="inspectCardBack" class="fut-card-back theme-gold p-4 sm:p-6 flex flex-col justify-between select-none shadow-2xl border-2 border-amber-400 rounded-3xl">
               <div>
                 <div class="flex items-center justify-between pb-3 border-b border-amber-400/40">
                   <div>
@@ -2527,6 +2533,12 @@
           </div>
         </div>
       </div>
+
+      <!-- Mobile Hint per Scorrimento e 3D -->
+      <p class="text-[10.5px] text-slate-400 font-semibold text-center mt-2 flex items-center justify-center gap-1.5 md:hidden opacity-85">
+        <i data-lucide="hand" class="w-3.5 h-3.5 text-cyan-400"></i>
+        <span>Scorri per muoverti • Tieni premuto per ruotare in 3D</span>
+      </p>
 
       <!-- Action buttons underneath the card -->
       <div class="w-full max-w-[340px] sm:max-w-[360px] mt-4 flex items-center gap-2">
